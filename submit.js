@@ -21,7 +21,7 @@
     // Google Sheets via Apps Script Web App
     googleSheets: {
       enabled: false,                              // Set to true after setup
-      webAppUrl: 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL'  // Apps Script → Deploy → Web App URL
+      webAppUrl: 'https://script.google.com/macros/s/AKfycbyyy-Vqhl733_c6Vw7T3k_q5_s3L4-h26xjNbkO0McMAsIik64415z-laniYdUaouTaZg/exec'  // Apps Script → Deploy → Web App URL
     },
 
     // Recipient info (for display purposes)
