@@ -13,9 +13,9 @@
     // EmailJS (https://www.emailjs.com)
     emailjs: {
       enabled: false,                              // Set to true after setup
-      publicKey: 'YOUR_EMAILJS_PUBLIC_KEY',        // Dashboard → Account → General → Public Key
-      serviceId: 'YOUR_EMAILJS_SERVICE_ID',        // Dashboard → Email Services → Service ID
-      templateId: 'YOUR_EMAILJS_TEMPLATE_ID'       // Dashboard → Email Templates → Template ID
+      publicKey: 'xknWvWLAqoNflQ2gO',        // Dashboard → Account → General → Public Key
+      serviceId: 'service_1rf6nkv',        // Dashboard → Email Services → Service ID
+      templateId: 'template_4t67h6g'       // Dashboard → Email Templates → Template ID
     },
 
     // Google Sheets via Apps Script Web App
