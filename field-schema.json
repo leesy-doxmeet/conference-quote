@@ -1,0 +1,184 @@
+{
+  "version": "1.0.0",
+  "sections": [
+    {
+      "id": "section_a",
+      "title": "행사 기본 정보",
+      "fields": [
+        { "key": "event_name", "label": "행사명", "type": "text", "required": true, "placeholder": "예: 제27회 추계학술대회" },
+        { "key": "organization_name", "label": "학회명 / 발주처명", "type": "text", "required": true, "placeholder": "예: 대한임상초음파학회" },
+        { "key": "event_type", "label": "행사 유형", "type": "multi_select", "required": true, "options": ["오프라인 행사", "온라인-이원생중계", "국제 행사"] },
+        { "key": "event_start_date", "label": "행사 시작일", "type": "date", "required": true },
+        { "key": "event_end_date", "label": "행사 종료일", "type": "date", "required": true },
+        { "key": "event_days", "label": "행사 운영일 수", "type": "number", "required": false, "auto_calculated": true, "formula": "inclusive_date_range(event_start_date, event_end_date)", "notes": "PROVISIONAL — auto-calculated from date range" },
+        { "key": "daily_schedule", "label": "운영 시간", "type": "repeatable_group", "required": true, "notes": "Dynamically generated per day from date range", "children": [
+          { "key": "day_label", "label": "일차", "type": "label" },
+          { "key": "start_time", "label": "시작 시간", "type": "time", "required": true },
+          { "key": "end_time", "label": "종료 시간", "type": "time", "required": true }
+        ]},
+        { "key": "pre_day_setup", "label": "전일 세팅 가능 여부", "type": "select", "required": true, "options": ["가능", "불가능", "미확인"] },
+        { "key": "venue_name", "label": "행사장명", "type": "text", "required": true, "placeholder": "예: 코엑스마곡 르웨스트홀" },
+        { "key": "venue_address", "label": "행사장 주소", "type": "text", "required": false, "placeholder": "예: 서울특별시 강서구" }
+      ]
+    },
+    {
+      "id": "section_b",
+      "title": "참석 인원 및 패컬티",
+      "fields": [
+        { "key": "expected_attendees", "label": "예상 등록자 수 (최대)", "type": "number", "required": true, "min": 1 },
+        { "key": "faculty_count", "label": "좌장 / 연자 등 패컬티 수", "type": "number", "required": true, "min": 0 },
+        { "key": "booth_staff_count", "label": "부스 인원 수", "type": "number", "required": false, "min": 0 },
+        { "key": "chairs_per_session", "label": "한 세션 좌장 수", "type": "radio", "required": true, "options": ["1인", "2인"] },
+        { "key": "has_mc", "label": "사회자 존재 여부", "type": "radio", "required": true, "options": ["있음", "없음"] },
+        { "key": "mc_count", "label": "사회자 총 인원 수", "type": "number", "required": false, "min": 1, "conditional": { "field": "has_mc", "value": "있음" } },
+        { "key": "room_based_calc", "label": "룸 수 기준 계산", "type": "number", "required": false, "notes": "Optional helper input for operational planning" },
+        { "key": "am_pm_split", "label": "오전 / 오후 분리 여부", "type": "radio", "required": false, "options": ["예", "아니오"], "notes": "Optional helper input for operational planning" }
+      ]
+    },
+    {
+      "id": "section_c",
+      "title": "운영 공간 구성",
+      "fields": [
+        { "key": "lecture_rooms", "label": "강의룸 수", "type": "number", "required": true, "min": 0 },
+        { "key": "practice_rooms", "label": "실습룸 수", "type": "number", "required": false, "min": 0 },
+        { "key": "has_preview_room", "label": "프리뷰룸 여부", "type": "radio", "required": true, "options": ["있음", "없음"] },
+        { "key": "has_secretariat_room", "label": "사무국룸 여부", "type": "radio", "required": true, "options": ["있음", "없음"] },
+        { "key": "has_special_rooms", "label": "별도 전시 및 특수발표공간 여부", "type": "radio", "required": true, "options": ["있음", "없음"] },
+        { "key": "special_room_count", "label": "별도 전시 및 특수발표공간 수", "type": "number", "required": false, "min": 1, "conditional": { "field": "has_special_rooms", "value": "있음" } },
+        { "key": "total_operational_rooms", "label": "운영 룸 수", "type": "number", "auto_calculated": true, "formula": "lecture_rooms + practice_rooms + special_room_count", "notes": "PROVISIONAL — derived helper, manual override available" },
+        { "key": "total_rooms_override", "label": "운영 룸 수 수동 조정", "type": "toggle", "required": false },
+        { "key": "include_preview_in_count", "label": "프리뷰룸 포함", "type": "checkbox", "required": false },
+        { "key": "include_secretariat_in_count", "label": "사무국룸 포함", "type": "checkbox", "required": false }
+      ]
+    },
+    {
+      "id": "section_d",
+      "title": "핸즈온 실습",
+      "fields": [
+        { "key": "has_handson", "label": "핸즈온 실습 여부", "type": "radio", "required": true, "options": ["있음", "없음"] },
+        { "key": "group_size", "label": "조별 인원", "type": "number", "required": false, "min": 1, "conditional": { "field": "has_handson", "value": "있음" } },
+        { "key": "group_count", "label": "조 수", "type": "number", "required": false, "min": 1, "conditional": { "field": "has_handson", "value": "있음" } },
+        { "key": "practice_tables", "label": "실습 테이블 수", "type": "number", "required": false, "min": 1, "conditional": { "field": "has_handson", "value": "있음" }, "notes": "Default same as group_count, manual edit allowed" },
+        { "key": "handson_memo", "label": "진행 일시 / 메모", "type": "textarea", "required": false, "conditional": { "field": "has_handson", "value": "있음" } },
+        { "key": "handson_assistants", "label": "핸즈온 보조인력 추천 수", "type": "number", "auto_calculated": true, "formula": "ceil(practice_tables / 4)", "notes": "PROVISIONAL — editable helper" }
+      ]
+    },
+    {
+      "id": "section_e",
+      "title": "부스 / 전시",
+      "fields": [
+        { "key": "has_booths", "label": "부스 진행 여부", "type": "radio", "required": true, "options": ["있음", "없음"] },
+        { "key": "booth_count", "label": "부스 수", "type": "number", "required": false, "min": 1, "conditional": { "field": "has_booths", "value": "있음" } },
+        { "key": "needs_electrical", "label": "전기 간선작업 필요 여부", "type": "radio", "required": false, "options": ["필요", "불필요"], "conditional": { "field": "has_booths", "value": "있음" } },
+        { "key": "booth_notes", "label": "비고", "type": "textarea", "required": false, "conditional": { "field": "has_booths", "value": "있음" } }
+      ]
+    },
+    {
+      "id": "section_f",
+      "title": "평점 및 출결 관리",
+      "fields": [
+        { "key": "has_kma_credit", "label": "대한의사협회 평점 부여 여부", "type": "radio", "required": true, "options": ["있음", "없음"] },
+        { "key": "kma_credit_points", "label": "의협 평점 수", "type": "number", "required": false, "conditional": { "field": "has_kma_credit", "value": "있음" } },
+        { "key": "kma_credit_rooms", "label": "의협 평점 관리 대상 룸 수", "type": "number", "required": false, "conditional": { "field": "has_kma_credit", "value": "있음" } },
+        { "key": "has_other_credits", "label": "기타 기관 평점 부여 여부", "type": "radio", "required": true, "options": ["있음", "없음"] },
+        { "key": "other_credit_institutions", "label": "기타 기관 평점", "type": "repeatable_group", "required": false, "conditional": { "field": "has_other_credits", "value": "있음" }, "children": [
+          { "key": "institution_name", "label": "기관명", "type": "text", "required": true },
+          { "key": "credit_points", "label": "평점 수", "type": "number", "required": true },
+          { "key": "credit_criteria", "label": "인정기준", "type": "radio", "required": true, "options": ["의협평점 동일", "별도 작성"] },
+          { "key": "custom_criteria", "label": "별도 인정기준 내용", "type": "textarea", "required": false, "conditional": { "field": "credit_criteria", "value": "별도 작성" } },
+          { "key": "institution_credit_rooms", "label": "해당 기관 평점 관리 대상 룸 수", "type": "number", "required": true }
+        ]},
+        { "key": "qr_reader_count", "label": "QR / 바코드 리더 추천 수량", "type": "number", "auto_calculated": true, "formula": "total_credit_rooms * 2", "notes": "PROVISIONAL — editable helper" }
+      ]
+    },
+    {
+      "id": "section_g",
+      "title": "등록 운영",
+      "fields": [
+        { "key": "needs_prereg_page", "label": "사전등록페이지 필요 여부", "type": "radio", "required": true, "options": ["필요", "불필요"] },
+        { "key": "prereg_requirements", "label": "사전등록페이지 요청사항", "type": "textarea", "required": false, "conditional": { "field": "needs_prereg_page", "value": "필요" } },
+        { "key": "needs_onsite_reg", "label": "현장등록 필요 여부", "type": "radio", "required": true, "options": ["필요", "불필요"] },
+        { "key": "needs_badge_printing", "label": "명찰 현장출력 필요 여부", "type": "radio", "required": true, "options": ["필요", "불필요"] },
+        { "key": "qr_send_method", "label": "QR 사전 발송 방식", "type": "radio", "required": true, "options": ["문자", "이메일", "둘 다", "없음"] },
+        { "key": "qr_send_timing", "label": "QR 사전 발송 시점", "type": "radio", "required": false, "options": ["하루 전", "2일 전", "일주일 전"], "helper_text": "등록 명단이 확정된 후 발송 가능합니다" }
+      ]
+    },
+    {
+      "id": "section_h",
+      "title": "제작물",
+      "fields": [
+        { "key": "program_book", "label": "프로그램북", "type": "toggle_card", "required": false, "children": [
+          { "key": "pb_format", "label": "제작 방식", "type": "radio", "options": ["인쇄", "PDF", "둘 다"] },
+          { "key": "pb_print_qty", "label": "인쇄 부수", "type": "number", "min": 1, "conditional": { "field": "pb_format", "value_in": ["인쇄", "둘 다"] } }
+        ]},
+        { "key": "abstract_book", "label": "초록집", "type": "toggle_card", "required": false, "children": [
+          { "key": "ab_format", "label": "제작 방식", "type": "radio", "options": ["인쇄", "PDF", "둘 다"] },
+          { "key": "ab_print_qty", "label": "인쇄 부수", "type": "number", "min": 1, "conditional": { "field": "ab_format", "value_in": ["인쇄", "둘 다"] } }
+        ]},
+        { "key": "badges", "label": "명찰", "type": "toggle_card", "required": false, "children": [
+          { "key": "badge_qty", "label": "수량", "type": "number", "min": 1, "auto_calculated": true, "formula": "ceil(expected_attendees * 1.2)", "notes": "PROVISIONAL — default suggestion, manual override allowed" }
+        ]},
+        { "key": "x_banners", "label": "X배너 (방향안내, 행사안내 등)", "type": "toggle_card", "required": false, "children": [
+          { "key": "xb_qty", "label": "수량", "type": "number", "min": 1 }
+        ]},
+        { "key": "hanging_banner", "label": "현수막", "type": "toggle_card", "required": false, "children": [
+          { "key": "hb_qty", "label": "수량", "type": "number", "min": 1 }
+        ]},
+        { "key": "podium_board", "label": "포디움보드", "type": "toggle_card", "required": false, "children": [
+          { "key": "pod_qty", "label": "수량", "type": "number", "min": 1 }
+        ]},
+        { "key": "schedule_banner", "label": "시간표 (대형 배너)", "type": "toggle_card", "required": false, "children": [
+          { "key": "sb_qty", "label": "수량", "type": "number", "min": 1 }
+        ]},
+        { "key": "custom_materials", "label": "추가 제작물", "type": "repeatable_group", "required": false, "children": [
+          { "key": "item_name", "label": "항목명", "type": "text", "required": true },
+          { "key": "item_qty", "label": "수량", "type": "number", "required": true },
+          { "key": "item_memo", "label": "메모", "type": "textarea", "required": false }
+        ]}
+      ]
+    },
+    {
+      "id": "section_i",
+      "title": "행사 후 산출물",
+      "fields": [
+        { "key": "post_event_outputs", "label": "산출물 선택", "type": "multi_select", "required": false, "options": ["연자별 사진", "연자별 강의영상", "평점부여내역 (의협)"] },
+        { "key": "video_type", "label": "강의영상 유형", "type": "radio", "required": false, "options": ["강의자료 + 소리만", "연자 얼굴 + 강의자료 + 음성"], "conditional": { "field": "post_event_outputs", "includes": "연자별 강의영상" } }
+      ]
+    },
+    {
+      "id": "section_j",
+      "title": "현장 질문 방식",
+      "fields": [
+        { "key": "has_live_qa", "label": "현장 질문 여부", "type": "radio", "required": true, "options": ["현장질문 받아요", "현장질문 안받아요"] },
+        { "key": "qa_method", "label": "질문 방식", "type": "multi_select", "required": false, "options": ["모바일로 받아 좌장이 연자에게 질문", "질문자가 현장에서 손들고 마이크 앞에서 질문"], "conditional": { "field": "has_live_qa", "value": "현장질문 받아요" } }
+      ]
+    },
+    {
+      "id": "section_k",
+      "title": "행사장 제공 시스템",
+      "fields": [
+        { "key": "venue_system_mode", "label": "행사장 시스템 제공 모드", "type": "radio", "required": true, "options": ["대행사측에서 확인해주세요. 대관만 했어요.", "일부 제공", "전부 외부 준비"] },
+        { "key": "venue_systems", "label": "시스템 목록", "type": "system_split_list", "required": false, "conditional": { "field": "venue_system_mode", "value": "일부 제공" }, "items": [
+          "발표 스크린", "홍보용 스크린", "음향", "마이크", "빔프로젝터", "스크린", "모니터", "노트북"
+        ], "split_options": ["행사장 제공", "외부 준비"] }
+      ]
+    },
+    {
+      "id": "section_l",
+      "title": "기타 특이사항",
+      "fields": [
+        { "key": "extra_notes", "label": "자유 메모", "type": "textarea", "required": false, "placeholder": "행사 관련 추가 요청사항이나 특이사항을 자유롭게 작성해 주세요." }
+      ]
+    }
+  ],
+  "provisional_formulas": {
+    "event_days": "inclusive_date_range(event_start_date, event_end_date)",
+    "badge_default_qty": "ceil(expected_attendees * 1.2)",
+    "qr_reader_count": "total_credit_rooms * 2",
+    "operator_count": "total_operational_rooms * 2",
+    "registration_desk_staff": 3,
+    "handson_assistants": "ceil(practice_tables / 4)",
+    "transport_placeholder": 200000,
+    "program_book_unit_cost": 8900
+  }
+}

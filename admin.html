@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+
+<!-- Perplexity Computer Attribution — SEO Meta Tags -->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>견적 단가 관리 — 학술대회 견적 시스템</title>
+<meta name="description" content="학술대회 견적 시스템의 항목별 단가를 관리하는 관리자 페이지">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="styles.css">
+<style>
+/* ============================================================
+   Admin Dashboard — Page-specific styles (Dual Tier)
+   Reuses design tokens from styles.css
+   ============================================================ */
+
+.admin-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-header-inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.admin-header-text {
+  flex: 1;
+  min-width: 200px;
+}
+
+.admin-header-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.admin-header-title svg {
+  width: 22px;
+  height: 22px;
+  color: var(--color-primary);
+}
+
+.admin-header-subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.admin-back-link {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.admin-back-link:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-lightest);
+}
+
+.admin-back-link svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Main content */
+.admin-body {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6) var(--space-16);
+}
+
+/* Category section card */
+.admin-category {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-6);
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow var(--transition);
+}
+
+.admin-category:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-category-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-surface-2);
+}
+
+.admin-category-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
+.admin-category-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text);
+  flex: 1;
+}
+
+.admin-category-count {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+/* Item list with tier column headers */
+.admin-item-list {
+  padding: 0 var(--space-6) var(--space-4);
+}
+
+.admin-tier-header {
+  display: grid;
+  grid-template-columns: 1fr 160px 160px 52px;
+  gap: var(--space-3);
+  padding: var(--space-3) 0 var(--space-2);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.admin-tier-label {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.admin-tier-label.standard {
+  color: var(--color-primary);
+}
+
+.admin-tier-label.budget {
+  color: #b8860b;
+}
+
+/* Item rows — dual input */
+.admin-item-row {
+  display: grid;
+  grid-template-columns: 1fr 160px 160px 52px;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.admin-item-row:last-child {
+  border-bottom: none;
+}
+
+.admin-item-label-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-item-label {
+  font-size: var(--text-base);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.admin-item-unit {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.admin-item-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.admin-item-input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition), border-left-color var(--transition);
+  -moz-appearance: textfield;
+  border-left: 3px solid var(--color-border);
+}
+
+.admin-item-input::-webkit-outer-spin-button,
+.admin-item-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.admin-item-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(26, 107, 90, 0.1);
+  border-left-color: var(--color-primary);
+}
+
+.admin-item-input.modified {
+  border-left-color: var(--color-warning);
+}
+
+.admin-item-input.modified:focus {
+  border-left-color: var(--color-warning);
+}
+
+/* Budget input accent */
+.admin-item-input.budget-input {
+  border-left-color: #e6d5a0;
+}
+
+.admin-item-input.budget-input:focus {
+  border-color: #b8860b;
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1);
+  border-left-color: #b8860b;
+}
+
+.admin-item-input.budget-input.modified {
+  border-left-color: var(--color-warning);
+}
+
+/* Reset cell */
+.admin-item-reset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-item-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  opacity: 0;
+}
+
+.admin-item-row:hover .admin-item-reset-btn {
+  opacity: 1;
+}
+
+.admin-item-reset-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: var(--color-primary-lightest);
+}
+
+/* Toast notification */
+.admin-toast {
+  position: fixed;
+  bottom: var(--space-8);
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--color-text);
+  color: #fff;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 9999;
+}
+
+.admin-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Footer */
+.admin-footer {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: var(--space-6);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.admin-footer-meta {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.admin-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.admin-footer-attr {
+  text-align: center;
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.admin-footer-attr a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.admin-footer-attr a:hover {
+  color: var(--color-primary);
+}
+
+/* Status bar (change indicator) */
+.admin-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.admin-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  transition: background var(--transition);
+}
+
+.admin-status-dot.unsaved {
+  background: var(--color-warning);
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .admin-header-inner {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .admin-body {
+    padding: var(--space-4) var(--space-4) var(--space-12);
+  }
+
+  .admin-tier-header {
+    grid-template-columns: 1fr;
+    display: none;
+  }
+
+  .admin-item-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+    padding: var(--space-4) 0;
+  }
+
+  .admin-item-input-wrap::before {
+    content: attr(data-tier-label);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-right: var(--space-2);
+    min-width: 42px;
+  }
+
+  .admin-category-header {
+    padding: var(--space-4);
+  }
+
+  .admin-item-list {
+    padding: 0 var(--space-4) var(--space-4);
+  }
+
+  .admin-header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .admin-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-item-reset-btn {
+    opacity: 1;
+  }
+}
+
+/* Hidden file input */
+.hidden-input {
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     STICKY HEADER
+     ============================================================ -->
+<header class="admin-header">
+  <div class="admin-header-inner">
+    <div class="admin-header-text">
+      <div class="admin-header-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+        견적 단가 관리
+      </div>
+      <div class="admin-header-subtitle">항목별 일반 / 최저가 단가를 수정하면 견적 입력 시스템에 자동 반영됩니다</div>
+    </div>
+    <div class="admin-header-actions">
+      <div class="admin-status" id="adminStatus">
+        <span class="admin-status-dot" id="statusDot"></span>
+        <span id="statusText">저장됨</span>
+      </div>
+      <a href="index.html" class="admin-back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        견적 입력 페이지
+      </a>
+      <button type="button" class="btn btn-ghost btn-sm" id="btnReset">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        <span class="btn-text">기본값으로 초기화</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" id="btnSave">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <span class="btn-text">저장</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY — Category sections
+     ============================================================ -->
+<div class="admin-body" id="adminBody">
+  <!-- Categories injected by JS -->
+</div>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<div class="admin-footer">
+  <div class="admin-footer-meta" id="lastModified">마지막 수정: —</div>
+  <div class="admin-footer-actions">
+    <button type="button" class="btn btn-ghost btn-sm" id="btnExportJSON">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span class="btn-text">단가표 JSON 내보내기</span>
+    </button>
+    <button type="button" class="btn btn-ghost btn-sm" id="btnImportJSON">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span class="btn-text">단가표 JSON 불러오기</span>
+    </button>
+    <input type="file" accept=".json" class="hidden-input" id="fileImport">
+  </div>
+</div>
+
+<div class="admin-footer-attr">
+  <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">Created with Perplexity Computer</a>
+</div>
+
+<!-- Toast -->
+<div class="admin-toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="pricing-config.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ============================================================
+  // Category definitions — mirrors the pricing-config.js keys
+  // ============================================================
+  var CATEGORIES = [
+    {
+      id: 'staff',
+      title: '인력',
+      icon: '👤',
+      items: [
+        { key: 'staff_director', label: '총감독 (Director)', unit: '원/일' },
+        { key: 'staff_operator', label: '운영요원 (Operator)', unit: '원/일' },
+        { key: 'staff_reg_desk', label: '등록데스크 보조 (Registration Desk)', unit: '원/일' },
+        { key: 'staff_handson', label: '핸즈온 보조 (Hands-on)', unit: '원/일' },
+        { key: 'staff_pre_setting', label: '사전세팅 (Pre-event Setup)', unit: '원/인' }
+      ]
+    },
+    {
+      id: 'registration',
+      title: '등록 운영',
+      icon: '📋',
+      items: [
+        { key: 'reg_barcode_system', label: '바코드 등록 시스템', unit: '원/식' },
+        { key: 'reg_badge_print_system', label: '명찰 현장출력 시스템', unit: '원/식' }
+      ]
+    },
+    {
+      id: 'credit',
+      title: '평점 운영',
+      icon: '🎓',
+      items: [
+        { key: 'credit_barcode_reader', label: '바코드 리더기', unit: '원/대' }
+      ]
+    },
+    {
+      id: 'materials',
+      title: '제작물',
+      icon: '🖨️',
+      items: [
+        { key: 'mat_design_fee', label: '디자인비', unit: '원/건' },
+        { key: 'mat_program_book', label: '프로그램북 인쇄', unit: '원/부' },
+        { key: 'mat_abstract_book', label: '초록집 인쇄', unit: '원/부' },
+        { key: 'mat_badge_paper', label: '명찰 용지', unit: '원/장' },
+        { key: 'mat_badge_case', label: '명찰 플라스틱 케이스', unit: '원/개' },
+        { key: 'mat_badge_strap', label: '명찰줄', unit: '원/개' },
+        { key: 'mat_x_banner', label: 'X배너', unit: '원/개' },
+        { key: 'mat_hanging_banner', label: '현수막', unit: '원/개' },
+        { key: 'mat_podium_board', label: '포디움보드', unit: '원/개' },
+        { key: 'mat_schedule_banner', label: '시간표 대형배너', unit: '원/개' }
+      ]
+    },
+    {
+      id: 'booth',
+      title: '부스 / 전시',
+      icon: '🏗️',
+      items: [
+        { key: 'booth_electrical', label: '전기 간선작업 (1kW당)', unit: '원/부스' }
+      ]
+    },
+    {
+      id: 'media',
+      title: '사진 / 영상',
+      icon: '📸',
+      items: [
+        { key: 'media_photo', label: '행사 사진 촬영', unit: '원/건' },
+        { key: 'media_video', label: '강의 영상 촬영/편집', unit: '원/건' }
+      ]
+    },
+    {
+      id: 'transport',
+      title: '운송 / 출장',
+      icon: '🚛',
+      items: [
+        { key: 'transport_default', label: '장비 운송비 (서울/경기)', unit: '원/회' },
+        { key: 'transport_chungcheong', label: '장비 운송비 (충북/충남/강원)', unit: '원/회' },
+        { key: 'transport_gyeongsang_jeonbuk', label: '장비 운송비 (경북/전북)', unit: '원/회' },
+        { key: 'transport_gyeongnam_jeonnam', label: '장비 운송비 (경남/전남)', unit: '원/회' },
+        { key: 'transport_jeju', label: '장비 운송비 (제주도)', unit: '원/회' }
+      ]
+    },
+    {
+      id: 'other',
+      title: '기타',
+      icon: '📦',
+      items: [
+        { key: 'other_staff_meal', label: '스태프 식비', unit: '원/인·끼' },
+        { key: 'other_staff_transport', label: '스태프 교통비', unit: '원/회' },
+        { key: 'other_staff_lodging', label: '스태프 숙박', unit: '원/박' }
+      ]
+    },
+    {
+      id: 'equipment',
+      title: '장비 렌탈',
+      icon: '🖥️',
+      items: [
+        { key: 'equip_lecture_system', label: '강의시스템 (기본+발표자모드)', unit: '원/식' },
+        { key: 'equip_notebook', label: '노트북', unit: '원/대' },
+        { key: 'equip_printer', label: '프린터 (명찰출력용)', unit: '원/대' },
+        { key: 'equip_monitor', label: '모니터 (연자/좌장용)', unit: '원/대' },
+        { key: 'equip_prompt', label: '프롬프트 (65인치)', unit: '원/대' },
+        { key: 'equip_timer', label: '타이머', unit: '원/대' },
+        { key: 'equip_switcher', label: '스위처 (HDMI Seamless)', unit: '원/대' },
+        { key: 'equip_preview', label: '프리뷰 구축', unit: '원/식' },
+        { key: 'equip_tablet', label: '태블릿 (Q&A용)', unit: '원/대' }
+      ]
+    },
+    {
+      id: 'fees',
+      title: '수수료',
+      icon: '💰',
+      items: [
+        { key: 'fee_agency_rate', label: '대행수수료율', unit: '%' },
+        { key: 'fee_vat_rate', label: '부가세율', unit: '%' }
+      ]
+    }
+  ];
+
+  // ============================================================
+  // State — dual tier
+  // ============================================================
+  var defaults = window.PricingConfig.defaults;
+  var standardPrices = window.PricingConfig.load('standard');
+  var budgetPrices = window.PricingConfig.load('budget');
+  var hasUnsaved = false;
+
+  // ============================================================
+  // Helpers
+  // ============================================================
+  function formatNumber(n) {
+    if (n === null || n === undefined || n === '') return '';
+    return Number(n).toLocaleString('ko-KR');
+  }
+
+  function parseNumber(str) {
+    if (!str) return 0;
+    return parseInt(String(str).replace(/[^0-9.-]/g, ''), 10) || 0;
+  }
+
+  function showToast(msg) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('visible');
+    setTimeout(function () { el.classList.remove('visible'); }, 2400);
+  }
+
+  function updateStatusIndicator() {
+    var dot = document.getElementById('statusDot');
+    var text = document.getElementById('statusText');
+    if (hasUnsaved) {
+      dot.classList.add('unsaved');
+      text.textContent = '변경사항 있음';
+    } else {
+      dot.classList.remove('unsaved');
+      text.textContent = '저장됨';
+    }
+  }
+
+  function updateLastModified() {
+    var raw = window.PricingConfig.getRaw();
+    var el = document.getElementById('lastModified');
+    if (raw && raw.updated_at) {
+      var d = new Date(raw.updated_at);
+      el.textContent = '마지막 수정: ' + d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0') + ' ' +
+        String(d.getHours()).padStart(2, '0') + ':' +
+        String(d.getMinutes()).padStart(2, '0');
+    } else {
+      el.textContent = '마지막 수정: —';
+    }
+  }
+
+  // ============================================================
+  // Render categories — dual column for each item
+  // ============================================================
+  function renderCategories() {
+    var body = document.getElementById('adminBody');
+    var html = '';
+
+    for (var c = 0; c < CATEGORIES.length; c++) {
+      var cat = CATEGORIES[c];
+      html += '<div class="admin-category" id="cat-' + cat.id + '">';
+      html += '<div class="admin-category-header">';
+      html += '<div class="admin-category-icon">' + cat.icon + '</div>';
+      html += '<div class="admin-category-title">' + cat.title + '</div>';
+      html += '<span class="admin-category-count">' + cat.items.length + '개 항목</span>';
+      html += '</div>';
+      html += '<div class="admin-item-list">';
+
+      // Tier column header
+      html += '<div class="admin-tier-header">';
+      html += '<div class="admin-tier-label" style="text-align:left">항목</div>';
+      html += '<div class="admin-tier-label standard">일반</div>';
+      html += '<div class="admin-tier-label budget">최저가</div>';
+      html += '<div class="admin-tier-label"></div>';
+      html += '</div>';
+
+      for (var i = 0; i < cat.items.length; i++) {
+        var item = cat.items[i];
+        var stdVal = standardPrices[item.key];
+        var budVal = budgetPrices[item.key];
+        var stdDef = defaults.standard[item.key];
+        var budDef = defaults.budget[item.key];
+        var stdModified = stdVal !== stdDef;
+        var budModified = budVal !== budDef;
+
+        html += '<div class="admin-item-row" data-key="' + item.key + '">';
+
+        // Label + unit
+        html += '<div class="admin-item-label-wrap">';
+        html += '<div class="admin-item-label">' + item.label + '</div>';
+        html += '<div class="admin-item-unit">' + item.unit + '</div>';
+        html += '</div>';
+
+        // Standard input
+        html += '<div class="admin-item-input-wrap" data-tier-label="일반">';
+        html += '<input type="text" class="admin-item-input' + (stdModified ? ' modified' : '') + '" ';
+        html += 'data-key="' + item.key + '" data-tier="standard" ';
+        html += 'value="' + formatNumber(stdVal) + '" ';
+        html += 'data-raw="' + stdVal + '" ';
+        html += 'inputmode="numeric">';
+        html += '</div>';
+
+        // Budget input
+        html += '<div class="admin-item-input-wrap" data-tier-label="최저가">';
+        html += '<input type="text" class="admin-item-input budget-input' + (budModified ? ' modified' : '') + '" ';
+        html += 'data-key="' + item.key + '" data-tier="budget" ';
+        html += 'value="' + formatNumber(budVal) + '" ';
+        html += 'data-raw="' + budVal + '" ';
+        html += 'inputmode="numeric">';
+        html += '</div>';
+
+        // Reset button
+        html += '<div class="admin-item-reset">';
+        html += '<button type="button" class="admin-item-reset-btn" data-key="' + item.key + '" title="기본값으로 복원">↩</button>';
+        html += '</div>';
+
+        html += '</div>';
+      }
+
+      html += '</div></div>';
+    }
+
+    body.innerHTML = html;
+  }
+
+  // ============================================================
+  // Input behavior: format on blur, raw on focus, track changes
+  // ============================================================
+  function setupInputHandlers() {
+    var body = document.getElementById('adminBody');
+
+    body.addEventListener('focus', function (e) {
+      if (e.target.classList.contains('admin-item-input')) {
+        var raw = e.target.getAttribute('data-raw');
+        e.target.value = raw;
+        e.target.select();
+      }
+    }, true);
+
+    body.addEventListener('blur', function (e) {
+      if (e.target.classList.contains('admin-item-input')) {
+        var key = e.target.getAttribute('data-key');
+        var tier = e.target.getAttribute('data-tier');
+        var val = parseNumber(e.target.value);
+        e.target.setAttribute('data-raw', val);
+        e.target.value = formatNumber(val);
+
+        // Update the right price store
+        if (tier === 'budget') {
+          budgetPrices[key] = val;
+          if (val !== defaults.budget[key]) {
+            e.target.classList.add('modified');
+          } else {
+            e.target.classList.remove('modified');
+          }
+        } else {
+          standardPrices[key] = val;
+          if (val !== defaults.standard[key]) {
+            e.target.classList.add('modified');
+          } else {
+            e.target.classList.remove('modified');
+          }
+        }
+
+        hasUnsaved = true;
+        updateStatusIndicator();
+      }
+    }, true);
+
+    // Prevent non-numeric input
+    body.addEventListener('keydown', function (e) {
+      if (e.target.classList.contains('admin-item-input')) {
+        var allowed = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+        if (allowed.indexOf(e.key) !== -1) return;
+        if (e.ctrlKey || e.metaKey) return;
+        if (!/^[0-9.\-]$/.test(e.key)) {
+          e.preventDefault();
+        }
+      }
+    });
+
+    // Enter key = blur to commit
+    body.addEventListener('keypress', function (e) {
+      if (e.target.classList.contains('admin-item-input') && e.key === 'Enter') {
+        e.target.blur();
+      }
+    });
+  }
+
+  // ============================================================
+  // Individual item reset (resets BOTH tiers)
+  // ============================================================
+  function setupResetButtons() {
+    var body = document.getElementById('adminBody');
+    body.addEventListener('click', function (e) {
+      var btn = e.target.closest('.admin-item-reset-btn');
+      if (!btn) return;
+      var key = btn.getAttribute('data-key');
+
+      // Reset standard
+      standardPrices[key] = defaults.standard[key];
+      var stdInput = body.querySelector('.admin-item-input[data-key="' + key + '"][data-tier="standard"]');
+      if (stdInput) {
+        stdInput.value = formatNumber(defaults.standard[key]);
+        stdInput.setAttribute('data-raw', defaults.standard[key]);
+        stdInput.classList.remove('modified');
+      }
+
+      // Reset budget
+      budgetPrices[key] = defaults.budget[key];
+      var budInput = body.querySelector('.admin-item-input[data-key="' + key + '"][data-tier="budget"]');
+      if (budInput) {
+        budInput.value = formatNumber(defaults.budget[key]);
+        budInput.setAttribute('data-raw', defaults.budget[key]);
+        budInput.classList.remove('modified');
+      }
+
+      hasUnsaved = true;
+      updateStatusIndicator();
+    });
+  }
+
+  // ============================================================
+  // Save
+  // ============================================================
+  function savePrices() {
+    window.PricingConfig.save(standardPrices, budgetPrices);
+    hasUnsaved = false;
+    updateStatusIndicator();
+    updateLastModified();
+    showToast('단가 설정이 저장되었습니다');
+  }
+
+  // ============================================================
+  // Reset all to defaults
+  // ============================================================
+  function resetAll() {
+    if (!confirm('모든 단가를 기본값으로 초기화하시겠습니까?')) return;
+    window.PricingConfig.clear();
+    standardPrices = window.PricingConfig.load('standard');
+    budgetPrices = window.PricingConfig.load('budget');
+    renderCategories();
+    hasUnsaved = false;
+    updateStatusIndicator();
+    updateLastModified();
+    showToast('모든 단가가 기본값으로 초기화되었습니다');
+  }
+
+  // ============================================================
+  // Export JSON
+  // ============================================================
+  function exportJSON() {
+    var payload = {
+      version: '2.0.0',
+      updated_at: new Date().toISOString(),
+      prices: {
+        standard: standardPrices,
+        budget: budgetPrices
+      }
+    };
+    var json = JSON.stringify(payload, null, 2);
+    var blob = new Blob([json], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'conference-pricing-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('단가표 JSON 파일을 내보냈습니다');
+  }
+
+  // ============================================================
+  // Import JSON — supports both v1 (flat) and v2 (tiered) format
+  // ============================================================
+  function importJSON(file) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        var data = JSON.parse(e.target.result);
+        if (!data || !data.prices) {
+          showToast('유효하지 않은 파일 형식입니다');
+          return;
+        }
+
+        var keys = window.PricingConfig.PRICE_KEYS;
+
+        // v2 format: prices.standard / prices.budget
+        if (data.prices.standard && data.prices.budget) {
+          for (var i = 0; i < keys.length; i++) {
+            if (data.prices.standard.hasOwnProperty(keys[i])) {
+              standardPrices[keys[i]] = data.prices.standard[keys[i]];
+            }
+            if (data.prices.budget.hasOwnProperty(keys[i])) {
+              budgetPrices[keys[i]] = data.prices.budget[keys[i]];
+            }
+          }
+        } else {
+          // v1 flat format — apply to standard only
+          for (var j = 0; j < keys.length; j++) {
+            if (data.prices.hasOwnProperty(keys[j])) {
+              standardPrices[keys[j]] = data.prices[keys[j]];
+            }
+          }
+        }
+
+        renderCategories();
+        hasUnsaved = true;
+        updateStatusIndicator();
+        showToast('단가표를 불러왔습니다. 저장 버튼을 눌러 적용하세요.');
+      } catch (err) {
+        showToast('JSON 파일을 읽을 수 없습니다');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ============================================================
+  // Event bindings
+  // ============================================================
+  function bindEvents() {
+    document.getElementById('btnSave').addEventListener('click', savePrices);
+    document.getElementById('btnReset').addEventListener('click', resetAll);
+    document.getElementById('btnExportJSON').addEventListener('click', exportJSON);
+    document.getElementById('btnImportJSON').addEventListener('click', function () {
+      document.getElementById('fileImport').click();
+    });
+    document.getElementById('fileImport').addEventListener('change', function (e) {
+      if (e.target.files && e.target.files[0]) {
+        importJSON(e.target.files[0]);
+        e.target.value = '';
+      }
+    });
+
+    // Warn before leaving with unsaved changes
+    window.addEventListener('beforeunload', function (e) {
+      if (hasUnsaved) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+  }
+
+  // ============================================================
+  // Init
+  // ============================================================
+  function init() {
+    renderCategories();
+    setupInputHandlers();
+    setupResetButtons();
+    bindEvents();
+    updateLastModified();
+    updateStatusIndicator();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
+
+</body>
+</html>
