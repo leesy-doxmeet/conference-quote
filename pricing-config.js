@@ -14,7 +14,7 @@
   // ============================================================
   // After deploying the Apps Script, paste the Web App URL here.
   // Leave empty string to use defaults only (offline mode).
-  var SHEETS_API_URL = '';
+  var SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbwax3dFUwFsdMGm8lPBbGqpqSVMBSbCmk2OPKPYY4ogAeDfJtzahgpfsIaKH0hEXQif/exec';
 
   // Safe in-memory storage (no browser storage APIs — sandboxed environment)
   var _pricingMemStore = {};
