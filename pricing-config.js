@@ -3,11 +3,18 @@
 // ============================================================
 // This file is included by BOTH admin.html and index.html.
 // Provides default prices for 'standard' and 'budget' tiers,
-// load/save utilities via safeStorage.
+// and async load/save via Google Sheets Apps Script Web App.
 // ============================================================
 
 (function () {
   'use strict';
+
+  // ============================================================
+  // Google Sheets API Configuration
+  // ============================================================
+  // After deploying the Apps Script, paste the Web App URL here.
+  // Leave empty string to use defaults only (offline mode).
+  var SHEETS_API_URL = '';
 
   // Safe in-memory storage (no browser storage APIs — sandboxed environment)
   var _pricingMemStore = {};
@@ -168,11 +175,11 @@
   var PRICE_KEYS = Object.keys(DEFAULT_PRICES.standard);
 
   // ============================================================
-  // PUBLIC API
+  // PUBLIC API — Synchronous (in-memory / fallback)
   // ============================================================
 
   /**
-   * Load pricing config for a given tier from storage.
+   * Load pricing config for a given tier from memory cache.
    * Falls back to defaults for any missing key.
    * @param {string} [tier='standard'] — 'standard' or 'budget'
    * @returns {object} A plain object with all pricing keys.
@@ -186,7 +193,7 @@
       prices[PRICE_KEYS[i]] = defaults[PRICE_KEYS[i]];
     }
 
-    // Overlay saved values
+    // Overlay saved values from memory
     var raw = pricingStorage.getItem(STORAGE_KEY);
     if (raw) {
       try {
@@ -216,9 +223,9 @@
   }
 
   /**
-   * Save pricing config for BOTH tiers.
-   * @param {object} standardPrices — plain object with pricing keys for standard tier
-   * @param {object} budgetPrices   — plain object with pricing keys for budget tier
+   * Save pricing config for BOTH tiers to in-memory store.
+   * @param {object} standardPrices
+   * @param {object} budgetPrices
    */
   function savePricingConfig(standardPrices, budgetPrices) {
     var payload = {
@@ -251,17 +258,114 @@
     pricingStorage.removeItem(STORAGE_KEY);
   }
 
+  // ============================================================
+  // ASYNC API — Google Sheets integration
+  // ============================================================
+
+  /**
+   * Check if Sheets API is configured.
+   * @returns {boolean}
+   */
+  function isSheetsConfigured() {
+    return SHEETS_API_URL && SHEETS_API_URL.length > 0;
+  }
+
+  /**
+   * Load prices from Google Sheets.
+   * On success, caches into in-memory store and returns the prices.
+   * On failure, returns null (caller should fall back to defaults).
+   * @returns {Promise<{standard: object, budget: object, updated_at: string}|null>}
+   */
+  function loadFromSheets() {
+    if (!isSheetsConfigured()) {
+      return Promise.resolve(null);
+    }
+
+    return fetch(SHEETS_API_URL)
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data && data.status === 'ok' && data.prices) {
+          // Cache in memory
+          var payload = {
+            version: '2.0.0',
+            updated_at: data.updated_at || new Date().toISOString(),
+            prices: data.prices
+          };
+          pricingStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+          return {
+            standard: data.prices.standard || {},
+            budget: data.prices.budget || {},
+            updated_at: data.updated_at || ''
+          };
+        }
+        // Sheet is empty or status is 'empty' — use defaults
+        return null;
+      })
+      .catch(function (err) {
+        console.warn('[PricingConfig] Failed to load from Sheets:', err);
+        return null;
+      });
+  }
+
+  /**
+   * Save prices to Google Sheets via GET request (avoids CORS redirect issues).
+   * Also saves to in-memory store.
+   * @param {object} standardPrices
+   * @param {object} budgetPrices
+   * @returns {Promise<{ok: boolean, updated_at: string}>}
+   */
+  function saveToSheets(standardPrices, budgetPrices) {
+    // Always save to memory first
+    savePricingConfig(standardPrices, budgetPrices);
+
+    if (!isSheetsConfigured()) {
+      return Promise.resolve({ ok: true, updated_at: new Date().toISOString(), offline: true });
+    }
+
+    var dataPayload = encodeURIComponent(JSON.stringify({
+      standard: standardPrices,
+      budget: budgetPrices
+    }));
+    var url = SHEETS_API_URL + '?action=write&data=' + dataPayload;
+
+    return fetch(url)
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data && data.status === 'ok') {
+          return { ok: true, updated_at: data.updated_at || new Date().toISOString() };
+        }
+        return { ok: false, error: data.message || 'Unknown error' };
+      })
+      .catch(function (err) {
+        console.warn('[PricingConfig] Failed to save to Sheets:', err);
+        return { ok: false, error: err.toString() };
+      });
+  }
+
+  // ============================================================
   // Expose on window
+  // ============================================================
   window.PricingConfig = {
     defaults: DEFAULT_PRICES,
     TIERS: TIERS,
     TIER_LABELS: TIER_LABELS,
     PRICE_KEYS: PRICE_KEYS,
+    STORAGE_KEY: STORAGE_KEY,
+
+    // Sync API (in-memory)
     load: loadPricingConfig,
     save: savePricingConfig,
     getRaw: getRawConfig,
     clear: clearPricingConfig,
-    STORAGE_KEY: STORAGE_KEY
+
+    // Async API (Google Sheets)
+    isSheetsConfigured: isSheetsConfigured,
+    loadFromSheets: loadFromSheets,
+    saveToSheets: saveToSheets,
+
+    // Expose URL setter so admin can update at runtime if needed
+    setSheetsUrl: function (url) { SHEETS_API_URL = url; },
+    getSheetsUrl: function () { return SHEETS_API_URL; }
   };
 
 })();

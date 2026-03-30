@@ -480,6 +480,10 @@
       <div class="admin-header-subtitle">항목별 일반 / 최저가 단가를 수정하면 견적 입력 시스템에 자동 반영됩니다</div>
     </div>
     <div class="admin-header-actions">
+      <div class="admin-status" id="sheetsStatus" style="display:none">
+        <span class="admin-status-dot" id="sheetsDot" style="background:var(--color-primary)"></span>
+        <span id="sheetsText" style="font-size:var(--text-xs);color:var(--color-text-muted)">Sheets 연결됨</span>
+      </div>
       <div class="admin-status" id="adminStatus">
         <span class="admin-status-dot" id="statusDot"></span>
         <span id="statusText">저장됨</span>
@@ -661,6 +665,7 @@
   var standardPrices = window.PricingConfig.load('standard');
   var budgetPrices = window.PricingConfig.load('budget');
   var hasUnsaved = false;
+  var isSaving = false;
 
   // ============================================================
   // Helpers
@@ -675,11 +680,15 @@
     return parseInt(String(str).replace(/[^0-9.-]/g, ''), 10) || 0;
   }
 
-  function showToast(msg) {
+  function showToast(msg, isError) {
     var el = document.getElementById('toast');
     el.textContent = msg;
+    el.style.background = isError ? '#c0392b' : '';
     el.classList.add('visible');
-    setTimeout(function () { el.classList.remove('visible'); }, 2400);
+    setTimeout(function () {
+      el.classList.remove('visible');
+      el.style.background = '';
+    }, 2400);
   }
 
   function updateStatusIndicator() {
@@ -694,9 +703,31 @@
     }
   }
 
-  function updateLastModified() {
-    var raw = window.PricingConfig.getRaw();
+  function updateSheetsIndicator(connected) {
+    var wrap = document.getElementById('sheetsStatus');
+    var dot = document.getElementById('sheetsDot');
+    var text = document.getElementById('sheetsText');
+    if (window.PricingConfig.isSheetsConfigured()) {
+      wrap.style.display = 'flex';
+      if (connected) {
+        dot.style.background = 'var(--color-primary)';
+        text.textContent = 'Sheets 연결됨';
+      } else {
+        dot.style.background = 'var(--color-warning)';
+        text.textContent = 'Sheets 오프라인';
+      }
+    } else {
+      wrap.style.display = 'none';
+    }
+  }
+
+  function updateLastModified(dateStr) {
     var el = document.getElementById('lastModified');
+    if (dateStr) {
+      el.textContent = '마지막 수정: ' + dateStr;
+      return;
+    }
+    var raw = window.PricingConfig.getRaw();
     if (raw && raw.updated_at) {
       var d = new Date(raw.updated_at);
       el.textContent = '마지막 수정: ' + d.getFullYear() + '-' +
@@ -706,6 +737,17 @@
         String(d.getMinutes()).padStart(2, '0');
     } else {
       el.textContent = '마지막 수정: —';
+    }
+  }
+
+  function setSaveButtonState(saving) {
+    var btn = document.getElementById('btnSave');
+    if (saving) {
+      btn.disabled = true;
+      btn.querySelector('.btn-text').textContent = '저장 중...';
+    } else {
+      btn.disabled = false;
+      btn.querySelector('.btn-text').textContent = '저장';
     }
   }
 
@@ -781,6 +823,18 @@
     }
 
     body.innerHTML = html;
+  }
+
+  // ============================================================
+  // Show loading skeleton while fetching from Sheets
+  // ============================================================
+  function showLoadingState() {
+    var body = document.getElementById('adminBody');
+    body.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:16px;">' +
+      '<div style="width:28px;height:28px;border:3px solid var(--color-border);border-top-color:var(--color-primary);border-radius:50%;animation:spin 0.8s linear infinite;"></div>' +
+      '<div style="font-size:var(--text-sm);color:var(--color-text-secondary)">Google Sheets에서 단가 데이터를 불러오는 중...</div>' +
+      '</div>' +
+      '<style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
   }
 
   // ============================================================
@@ -881,29 +935,69 @@
   }
 
   // ============================================================
-  // Save
+  // Save — async, persists to Google Sheets + in-memory
   // ============================================================
   function savePrices() {
-    window.PricingConfig.save(standardPrices, budgetPrices);
-    hasUnsaved = false;
-    updateStatusIndicator();
-    updateLastModified();
-    showToast('단가 설정이 저장되었습니다');
+    if (isSaving) return;
+    isSaving = true;
+    setSaveButtonState(true);
+
+    window.PricingConfig.saveToSheets(standardPrices, budgetPrices)
+      .then(function (result) {
+        isSaving = false;
+        setSaveButtonState(false);
+        hasUnsaved = false;
+        updateStatusIndicator();
+
+        if (result.ok) {
+          if (result.updated_at) {
+            updateLastModified(result.updated_at);
+          } else {
+            updateLastModified();
+          }
+          if (result.offline) {
+            showToast('단가 설정이 저장되었습니다 (로컬)');
+          } else {
+            showToast('단가 설정이 Google Sheets에 저장되었습니다');
+          }
+        } else {
+          // Save to memory succeeded but Sheets failed
+          showToast('Sheets 저장 실패 — 로컬에만 저장됨', true);
+        }
+      })
+      .catch(function () {
+        isSaving = false;
+        setSaveButtonState(false);
+        showToast('저장 중 오류가 발생했습니다', true);
+      });
   }
 
   // ============================================================
-  // Reset all to defaults
+  // Reset all to defaults — also saves to Sheets
   // ============================================================
   function resetAll() {
-    if (!confirm('모든 단가를 기본값으로 초기화하시겠습니까?')) return;
+    if (!confirm('모든 단가를 기본값으로 초기화하시겠습니까?\n\n이 작업은 Google Sheets의 데이터도 기본값으로 덮어씁니다.')) return;
     window.PricingConfig.clear();
     standardPrices = window.PricingConfig.load('standard');
     budgetPrices = window.PricingConfig.load('budget');
     renderCategories();
-    hasUnsaved = false;
-    updateStatusIndicator();
-    updateLastModified();
-    showToast('모든 단가가 기본값으로 초기화되었습니다');
+
+    // Also persist defaults to Sheets
+    setSaveButtonState(true);
+    window.PricingConfig.saveToSheets(standardPrices, budgetPrices)
+      .then(function () {
+        setSaveButtonState(false);
+        hasUnsaved = false;
+        updateStatusIndicator();
+        updateLastModified();
+        showToast('모든 단가가 기본값으로 초기화되었습니다');
+      })
+      .catch(function () {
+        setSaveButtonState(false);
+        hasUnsaved = false;
+        updateStatusIndicator();
+        showToast('기본값 초기화됨 (Sheets 반영 실패)', true);
+      });
   }
 
   // ============================================================
@@ -940,7 +1034,7 @@
       try {
         var data = JSON.parse(e.target.result);
         if (!data || !data.prices) {
-          showToast('유효하지 않은 파일 형식입니다');
+          showToast('유효하지 않은 파일 형식입니다', true);
           return;
         }
 
@@ -970,7 +1064,7 @@
         updateStatusIndicator();
         showToast('단가표를 불러왔습니다. 저장 버튼을 눌러 적용하세요.');
       } catch (err) {
-        showToast('JSON 파일을 읽을 수 없습니다');
+        showToast('JSON 파일을 읽을 수 없습니다', true);
       }
     };
     reader.readAsText(file);
@@ -1003,15 +1097,56 @@
   }
 
   // ============================================================
-  // Init
+  // Init — async: try loading from Sheets first
   // ============================================================
   function init() {
-    renderCategories();
     setupInputHandlers();
     setupResetButtons();
     bindEvents();
-    updateLastModified();
-    updateStatusIndicator();
+
+    if (window.PricingConfig.isSheetsConfigured()) {
+      // Show loading state while fetching
+      showLoadingState();
+      updateSheetsIndicator(false);
+
+      window.PricingConfig.loadFromSheets()
+        .then(function (sheetsData) {
+          if (sheetsData) {
+            // Merge Sheets data with defaults
+            var keys = window.PricingConfig.PRICE_KEYS;
+            for (var i = 0; i < keys.length; i++) {
+              if (sheetsData.standard && sheetsData.standard[keys[i]] !== undefined) {
+                standardPrices[keys[i]] = sheetsData.standard[keys[i]];
+              }
+              if (sheetsData.budget && sheetsData.budget[keys[i]] !== undefined) {
+                budgetPrices[keys[i]] = sheetsData.budget[keys[i]];
+              }
+            }
+            updateSheetsIndicator(true);
+            if (sheetsData.updated_at) {
+              updateLastModified(sheetsData.updated_at);
+            }
+          } else {
+            // Sheet empty or error — show as connected but using defaults
+            updateSheetsIndicator(true);
+            updateLastModified();
+          }
+
+          renderCategories();
+          updateStatusIndicator();
+        })
+        .catch(function () {
+          updateSheetsIndicator(false);
+          renderCategories();
+          updateStatusIndicator();
+          updateLastModified();
+        });
+    } else {
+      // Sheets not configured — render immediately with defaults
+      renderCategories();
+      updateStatusIndicator();
+      updateLastModified();
+    }
   }
 
   if (document.readyState === 'loading') {

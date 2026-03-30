@@ -1603,15 +1603,49 @@
     }
   });
 
+  // ============================================================
+  // Async pricing refresh from Google Sheets
+  // ============================================================
+  function refreshPricingFromSheets() {
+    if (!window.PricingConfig || !window.PricingConfig.isSheetsConfigured()) return;
+
+    window.PricingConfig.loadFromSheets()
+      .then(function (sheetsData) {
+        if (sheetsData) {
+          var keys = window.PricingConfig.PRICE_KEYS;
+          for (var i = 0; i < keys.length; i++) {
+            if (sheetsData.standard && sheetsData.standard[keys[i]] !== undefined) {
+              pricingConfigs.standard[keys[i]] = sheetsData.standard[keys[i]];
+            }
+            if (sheetsData.budget && sheetsData.budget[keys[i]] !== undefined) {
+              pricingConfigs.budget[keys[i]] = sheetsData.budget[keys[i]];
+            }
+          }
+          // Re-point current tier and recalculate
+          pricingConfig = pricingConfigs[currentTier];
+          TRANSPORT_PLACEHOLDER = P('transport_default', 250000);
+          PROGRAM_BOOK_UNIT_COST = P('mat_program_book', 8900);
+          updateSummary();
+        }
+      })
+      .catch(function () {
+        // Silently fall back to defaults — already loaded
+      });
+  }
+
   // Expose tier switcher for external access (tier tab UI)
   window.setQuoteTier = setTier;
   window.getQuoteTier = function () { return currentTier; };
 
   // --- Run ---
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', function () {
+      init();
+      refreshPricingFromSheets();
+    });
   } else {
     init();
+    refreshPricingFromSheets();
   }
 
 })();
