@@ -1295,30 +1295,6 @@
     showToast('모든 입력이 초기화되었습니다', 'success');
   }
 
-  // --- JSON 내보내기 ---
-  function handleExportJSON() {
-    var data = getFormData();
-    data._meta = {
-      exported_at: new Date().toISOString(),
-      version: '1.0.0',
-      system: '학술대회 견적 입력 시스템'
-    };
-
-    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    var url = URL.createObjectURL(blob);
-    var eventName = data.event_name || '견적';
-    var dateStr = new Date().toISOString().split('T')[0];
-    var filename = '견적_' + eventName.replace(/\s+/g, '_') + '_' + dateStr + '.json';
-
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-
-    showToast('JSON 파일이 다운로드되었습니다', 'success');
-  }
-
   // --- 샘플 데이터 불러오기 ---
   function handleLoadSample() {
     var sampleData = {
@@ -1563,9 +1539,6 @@
 
     var btnReset = document.getElementById('btnReset');
     if (btnReset) btnReset.addEventListener('click', handleReset);
-
-    var btnExport = document.getElementById('btnExportJSON');
-    if (btnExport) btnExport.addEventListener('click', handleExportJSON);
 
     var btnSample = document.getElementById('btnLoadSample');
     if (btnSample) btnSample.addEventListener('click', handleLoadSample);

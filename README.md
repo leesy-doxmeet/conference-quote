@@ -25,7 +25,6 @@ Academic Conference Quotation Intake System
    - **샘플 데이터 불러오기** — Load a pre-filled sample for testing
    - **임시저장** — Save the current draft to the in-memory session state
    - **초기화** — Clear all form data
-   - **JSON 내보내기** — Download form data as JSON
    - **인쇄 / PDF 저장** — Print or save as PDF via browser print dialog
    - **견적 제출** — Send via EmailJS / Google Sheets after enabling integrations in `submit.js`
 
