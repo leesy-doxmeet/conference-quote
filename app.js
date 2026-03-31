@@ -40,6 +40,7 @@
     // Re-derive cached price variables
     TRANSPORT_PLACEHOLDER = P('transport_default', 250000);
     PROGRAM_BOOK_UNIT_COST = P('mat_program_book', 8900);
+    updateMaterialQuantities();
     updateSummary();
   }
 
@@ -61,9 +62,9 @@
 
   const REQUIRED_FIELDS = {
     sectionA: ['event_name', 'organization_name', 'event_type', 'event_start_date', 'event_end_date', 'pre_day_setup', 'venue_name'],
-    sectionB: ['expected_attendees', 'faculty_count', 'chairs_per_session', 'has_mc'],
+    sectionB: ['expected_attendees', 'speaker_count', 'chair_count', 'panel_count', 'mc_total_count'],
     sectionC: ['lecture_rooms', 'has_preview_room', 'has_special_rooms'],
-    sectionD: ['needs_video_recording'],
+    sectionD: ['venue_operation_mode'],
     sectionE: ['has_handson'],
     sectionF: ['has_booths'],
     sectionG: ['has_kma_credit', 'has_other_credits'],
@@ -71,15 +72,21 @@
     sectionI: [],
     sectionJ: [],
     sectionK: ['has_live_qa'],
-    sectionL: ['venue_system_mode'],
+    sectionL: [],
     sectionM: []
   };
 
   const STORAGE_KEY = 'conference_quote_draft';
 
-  const VENUE_SYSTEM_ITEMS = [
-    '발표 스크린', '홍보용 스크린', '음향', '마이크',
-    '빔프로젝터', '스크린', '모니터', '노트북'
+  // Per-item venue equipment (V2: 7 items, no 노트북)
+  const VENUE_EQUIP_ITEMS = [
+    { id: 'audio', label: '음향' },
+    { id: 'mic', label: '마이크' },
+    { id: 'screen', label: '스크린' },
+    { id: 'beam', label: '빔프로젝터' },
+    { id: 'monitor', label: '모니터' },
+    { id: 'pscreen', label: '발표 스크린' },
+    { id: 'promo', label: '홍보용 스크린' }
   ];
 
   // ============================================================
@@ -125,15 +132,79 @@
   var TRANSPORT_PLACEHOLDER = P('transport_default', 250000);
   var PROGRAM_BOOK_UNIT_COST = P('mat_program_book', 8900);
 
+  // Sum of all faculty sub-fields
+  function getTotalFaculty() {
+    return getNumVal('speaker_count') + getNumVal('chair_count') +
+           getNumVal('panel_count') + getNumVal('mc_total_count') +
+           getNumVal('vip_count');
+  }
+
+  // Auto-calculate material quantities based on tier and form values
+  function updateMaterialQuantities() {
+    var attendees = getNumVal('expected_attendees');
+    var boothCount = getNumVal('booth_count');
+    var rooms = getNumVal('lecture_rooms');
+    var isBudget = currentTier === 'budget';
+
+    // Program book qty (when format includes print)
+    var pbFormat = getRadioValue('pb_format');
+    var pbEl = document.getElementById('pb_print_qty');
+    if (pbEl && !pbEl._userEdited && (pbFormat === '인쇄' || pbFormat === '둘 다') && attendees > 0) {
+      pbEl.value = Math.ceil(attendees * 1.1);
+    }
+
+    // Abstract book qty
+    var abFormat = getRadioValue('ab_format');
+    var abEl = document.getElementById('ab_print_qty');
+    if (abEl && !abEl._userEdited && (abFormat === '인쇄' || abFormat === '둘 다') && attendees > 0) {
+      abEl.value = Math.ceil((attendees + (boothCount * 1.5)) * 1.1);
+    }
+
+    // Badge qty
+    var badgeEl = document.getElementById('badge_qty');
+    if (badgeEl && !badgeEl._userEdited && attendees > 0) {
+      badgeEl.value = Math.ceil(attendees * 1.2);
+    }
+
+    // X-banner qty
+    var xbEl = document.getElementById('xb_qty');
+    if (xbEl && !xbEl._userEdited) {
+      xbEl.value = isBudget ? 2 : 8;
+    }
+
+    // Hanging banner qty
+    var hbEl = document.getElementById('hb_qty');
+    if (hbEl && !hbEl._userEdited) {
+      hbEl.value = isBudget ? 1 : (rooms + 1);
+    }
+
+    // Podium board qty
+    var podEl = document.getElementById('pod_qty');
+    if (podEl && !podEl._userEdited) {
+      podEl.value = isBudget ? 0 : rooms;
+    }
+
+    // Schedule banner qty
+    var sbEl = document.getElementById('sb_qty');
+    if (sbEl && !sbEl._userEdited) {
+      sbEl.value = isBudget ? 2 : (2 + rooms);
+    }
+
+    // Name plate qty
+    var npEl = document.getElementById('np_qty');
+    if (npEl && !npEl._userEdited) {
+      npEl.value = isBudget ? 0 : getTotalFaculty();
+    }
+  }
+
   // --- Estimate category functions ---
 
   function estimateStaff(data) {
-    var totalRooms = parseInt(data.total_operational_rooms, 10) || 0;
-    var operatorCount = calcOperatorCount(totalRooms);
-    var regDeskStaff = REGISTRATION_DESK_STAFF;
+    var rooms = parseInt(data.lecture_rooms, 10) || 0;
+    var attendees = parseInt(data.expected_attendees, 10) || 0;
     var handsonAssistants = parseInt(data.handson_assistants, 10) || 0;
-    var totalStaff = 1 + operatorCount + regDeskStaff + handsonAssistants;
     var eventDays = parseInt(data.event_days, 10) || 1;
+    var isBudget = currentTier === 'budget';
 
     var pDir = P('staff_director', 250000);
     var pOp = P('staff_operator', 200000);
@@ -141,53 +212,75 @@
     var pHand = P('staff_handson', 150000);
     var pPre = P('staff_pre_setting', 130000);
 
-    var director = pDir * eventDays;
-    var operators = pOp * operatorCount * eventDays;
-    var assistants = pReg * regDeskStaff * eventDays;
-    var handsonStaff = pHand * handsonAssistants * eventDays;
-    var preSetting = pPre * totalStaff;
+    // V2 formula
+    var directorQty = 1;
+    var operatorQty = isBudget ? rooms : rooms * 2;
+    var regDeskQty = isBudget ? 2 : Math.ceil(attendees / 50);
+    var handsonQty = isBudget ? handsonAssistants : Math.ceil(handsonAssistants * 1.2);
+    var preSettingQty = isBudget ? 3 : rooms * 3;
+
+    var director = pDir * directorQty * eventDays;
+    var operators = pOp * operatorQty * eventDays;
+    var regDesk = pReg * regDeskQty * eventDays;
+    var handsonStaff = pHand * handsonQty * eventDays;
+    var preSetting = pPre * preSettingQty;
+
+    var totalStaff = directorQty + operatorQty + regDeskQty + handsonQty + preSettingQty;
 
     return {
-      total: director + operators + assistants + handsonStaff + preSetting,
+      total: director + operators + regDesk + handsonStaff + preSetting,
       breakdown: [
-        { item: '총감독', qty: 1, unit: pDir, amount: director },
-        { item: '운영요원', qty: operatorCount, unit: pOp, amount: operators },
-        { item: '등록데스크 보조', qty: regDeskStaff, unit: pReg, amount: assistants },
-        { item: '핸즈온 보조', qty: handsonAssistants, unit: pHand, amount: handsonStaff },
-        { item: '사전세팅', qty: totalStaff, unit: pPre, amount: preSetting }
+        { item: '총감독', qty: directorQty, unit: pDir, amount: director },
+        { item: '운영요원', qty: operatorQty, unit: pOp, amount: operators },
+        { item: '등록데스크 보조', qty: regDeskQty, unit: pReg, amount: regDesk },
+        { item: '핸즈온 보조', qty: handsonQty, unit: pHand, amount: handsonStaff },
+        { item: '사전세팅', qty: preSettingQty, unit: pPre, amount: preSetting }
       ],
       totalStaff: totalStaff
     };
   }
 
-  function estimateRegistration(data) {
-    var pBarcode = P('reg_barcode_system', 400000);
-    var pBadgePrint = P('reg_badge_print_system', 80000);
-    var barcode = pBarcode;
-    var badgePrint = 0;
-    if (getRadioValue('needs_badge_printing') === '필요') {
-      badgePrint = pBadgePrint;
-    }
-    return {
-      total: barcode + badgePrint,
-      breakdown: [
-        { item: '바코드 등록 시스템', qty: 1, unit: pBarcode, amount: barcode },
-        { item: '명찰 현장출력 시스템', qty: badgePrint > 0 ? 1 : 0, unit: pBadgePrint, amount: badgePrint }
-      ]
-    };
-  }
+  // V2: merged registration + credit into operations
+  function estimateOperations(data) {
+    var items = [];
+    var total = 0;
+    var isBudget = currentTier === 'budget';
+    var rooms = parseInt(data.lecture_rooms, 10) || 0;
 
-  function estimateCredit(data) {
-    var pReader = P('credit_barcode_reader', 150000);
-    var totalCreditRooms = getTotalCreditRooms();
-    var qrCount = parseInt(data.qr_reader_count, 10) || calcQRReaders(totalCreditRooms);
-    var amount = pReader * qrCount;
-    return {
-      total: amount,
-      breakdown: [
-        { item: '바코드 리더기', qty: qrCount, unit: pReader, amount: amount }
-      ]
-    };
+    // Barcode registration system
+    var pBarcode = P('reg_barcode_system', 400000);
+    items.push({ item: '바코드 등록 시스템', qty: 1, unit: pBarcode, amount: pBarcode });
+    total += pBarcode;
+
+    // Badge printing system
+    if (getRadioValue('needs_badge_printing') === '필요') {
+      var pBadgePrint = P('reg_badge_print_system', 80000);
+      items.push({ item: '명찰 현장출력 시스템', qty: 1, unit: pBadgePrint, amount: pBadgePrint });
+      total += pBadgePrint;
+    }
+
+    // Credit system (의협평점)
+    if (getRadioValue('has_kma_credit') === '있음') {
+      var pReader = P('credit_barcode_reader', 150000);
+      var pNotebook = P('equip_notebook_rental', 80000);
+
+      if (isBudget) {
+        // Budget: just 2 readers
+        var budgetAmt = pReader * 2;
+        items.push({ item: '의협평점 바코드리더기', qty: 2, unit: pReader, amount: budgetAmt });
+        total += budgetAmt;
+      } else {
+        // Standard: (reader + notebook) × rooms × 2 + reader × 2
+        var roomSets = (pReader + pNotebook) * rooms * 2;
+        var extraReaders = pReader * 2;
+        var creditTotal = roomSets + extraReaders;
+        items.push({ item: '의협평점 (리더기+노트북) × 룸', qty: rooms * 2, unit: pReader + pNotebook, amount: roomSets });
+        items.push({ item: '의협평점 추가 리더기', qty: 2, unit: pReader, amount: extraReaders });
+        total += creditTotal;
+      }
+    }
+
+    return { total: total, breakdown: items };
   }
 
   function estimateMaterials(data) {
@@ -292,26 +385,72 @@
     if (getRadioValue('has_booths') !== '있음') {
       return { total: 0, breakdown: [] };
     }
-    var items = [];
-    var total = 0;
-
-    return { total: total, breakdown: items };
+    // V2: show notice text, amount = 0
+    return {
+      total: 0,
+      breakdown: [
+        { item: '간선작업 필요 시 금액 추가 예정', qty: 0, unit: 0, amount: 0 }
+      ]
+    };
   }
 
+  // V2: based on Section D (행사장 운영) and video options
   function estimateMedia(data) {
     var items = [];
     var total = 0;
-    var outputs = getCheckedValues('post_event_outputs');
+    var rooms = parseInt(data.lecture_rooms, 10) || 0;
+    var eventDays = parseInt(data.event_days, 10) || 1;
+    var venueMode = getRadioValue('venue_operation_mode');
+    var videoOptions = getCheckedValues('video_options');
 
-    var pPhoto = P('media_photo', 250000);
-    var pVideo = P('media_video', 400000);
-    if (outputs.includes('연자별 사진')) {
-      items.push({ item: '행사 사진 촬영', qty: 1, unit: pPhoto, amount: pPhoto });
-      total += pPhoto;
-    }
-    if (outputs.includes('연자별 강의영상')) {
-      items.push({ item: '강의 영상 촬영/편집', qty: 1, unit: pVideo, amount: pVideo });
-      total += pVideo;
+    if (venueMode === '촬영 필요') {
+      // Camera costs (per room per day)
+      var pCamera = P('media_camera', 300000);
+      var cameraAmt = pCamera * rooms * eventDays;
+      items.push({ item: '카메라', qty: rooms * eventDays, unit: pCamera, amount: cameraAmt });
+      total += cameraAmt;
+
+      // Camera director
+      var pCamDir = P('media_camera_director', 300000);
+      var camDirAmt = pCamDir * eventDays;
+      items.push({ item: '카메라감독', qty: eventDays, unit: pCamDir, amount: camDirAmt });
+      total += camDirAmt;
+
+      // Sound director
+      var pSndDir = P('media_sound_director', 300000);
+      var sndDirAmt = pSndDir * eventDays;
+      items.push({ item: '음향감독', qty: eventDays, unit: pSndDir, amount: sndDirAmt });
+      total += sndDirAmt;
+
+      // Chair monitor
+      if (getRadioValue('chair_monitor_needed') === '필요') {
+        var pChairMon = P('media_chair_monitor', 200000);
+        var chairMonAmt = pChairMon * rooms;
+        items.push({ item: '좌장 모니터', qty: rooms, unit: pChairMon, amount: chairMonAmt });
+        total += chairMonAmt;
+      }
+
+      // Chair live broadcast / QA system
+      if (getRadioValue('chair_live_broadcast') === '필요') {
+        var pQA = P('media_qa_system', 300000);
+        items.push({ item: '질의응답 시스템', qty: 1, unit: pQA, amount: pQA });
+        total += pQA;
+      }
+
+      // LED system
+      if (getRadioValue('display_type') === 'LED 사용') {
+        var pLED = P('media_led_system', 500000);
+        items.push({ item: 'LED 시스템', qty: 1, unit: pLED, amount: pLED });
+        total += pLED;
+      }
+
+      // Post-edit (if lecture recording selected)
+      if (videoOptions.includes('강의룸별 강의영상 녹화')) {
+        var pPostEdit = P('media_post_edit', 200000);
+        var postEditAmt = pPostEdit * rooms;
+        items.push({ item: '영상 후편집', qty: rooms, unit: pPostEdit, amount: postEditAmt });
+        total += postEditAmt;
+      }
     }
 
     return { total: total, breakdown: items };
@@ -326,7 +465,8 @@
     };
   }
 
-  function estimateOther(data) {
+  // V2: 기타 includes meals, transport, agency fee, VAT
+  function estimateOther(data, subtotalBeforeFees) {
     var pMeal = P('other_staff_meal', 12000);
     var pTransport = P('other_staff_transport', 150000);
     var staffEst = estimateStaff(data);
@@ -334,13 +474,27 @@
     var eventDays = parseInt(data.event_days, 10) || 1;
     var meals = pMeal * totalStaff * eventDays;
     var staffTransport = pTransport;
-    return {
-      total: meals + staffTransport,
-      breakdown: [
-        { item: '스태프 식비', qty: totalStaff * eventDays, unit: pMeal, amount: meals },
-        { item: '스태프 교통비', qty: 1, unit: pTransport, amount: staffTransport }
-      ]
-    };
+
+    var items = [
+      { item: '스태프 식비', qty: totalStaff * eventDays, unit: pMeal, amount: meals },
+      { item: '스태프 교통비', qty: 1, unit: pTransport, amount: staffTransport }
+    ];
+    var total = meals + staffTransport;
+
+    // Agency fee (% of subtotal before fees)
+    var agencyRate = P('fee_agency_rate', 10) / 100;
+    var agencyFee = Math.round((subtotalBeforeFees || 0) * agencyRate);
+    items.push({ item: '수수료 (' + (agencyRate * 100) + '%)', qty: 1, unit: agencyFee, amount: agencyFee });
+    total += agencyFee;
+
+    // VAT (% of subtotal before VAT)
+    var vatRate = P('fee_vat_rate', 10) / 100;
+    var vatBase = (subtotalBeforeFees || 0) + agencyFee + meals + staffTransport;
+    var vat = Math.round(vatBase * vatRate);
+    items.push({ item: 'VAT (' + (vatRate * 100) + '%)', qty: 1, unit: vat, amount: vat });
+    total += vat;
+
+    return { total: total, breakdown: items };
   }
 
 
@@ -373,8 +527,8 @@
       }
     });
 
-    // Multi-select checkboxes (event_type, post_event_outputs, qa_method, qr_send_method, qr_send_timing)
-    ['event_type', 'post_event_outputs', 'qa_method', 'qr_send_method', 'qr_send_timing'].forEach(function (name) {
+    // Multi-select checkboxes
+    ['event_type', 'post_event_outputs', 'qa_method', 'qr_send_method', 'qr_send_timing', 'video_options'].forEach(function (name) {
       data[name] = getCheckedValues(name);
     });
 
@@ -429,19 +583,11 @@
       data.custom_materials.push(mat);
     });
 
-    // Venue systems (split)
-    data.venue_systems = { venue_provided: [], external_setup: [] };
-    VENUE_SYSTEM_ITEMS.forEach(function (item) {
-      var radios = $$('input[name="venue_systems.' + item + '"]');
-      radios.forEach(function (r) {
-        if (r.checked) {
-          if (r.value === '행사장 제공') {
-            data.venue_systems.venue_provided.push(item);
-          } else if (r.value === '외부 준비') {
-            data.venue_systems.external_setup.push(item);
-          }
-        }
-      });
+    // Venue equipment (per-item 4-option radios)
+    data.venue_equipment = {};
+    VENUE_EQUIP_ITEMS.forEach(function (item) {
+      var radio = $('input[name="venue_equip_' + item.id + '"]:checked');
+      data.venue_equipment[item.id] = radio ? radio.value : null;
     });
 
     return data;
@@ -473,15 +619,14 @@
     });
 
     // Radio buttons
-    ['chairs_per_session', 'has_mc', 'has_preview_room',
+    ['has_preview_room',
      'has_special_rooms', 'has_handson', 'has_booths',
      'has_kma_credit', 'has_other_credits', 'needs_prereg_page',
      'needs_onsite_reg', 'needs_badge_printing',
-     'has_live_qa', 'venue_system_mode',
+     'has_live_qa',
      'pb_format', 'ab_format', 'video_type',
-     'needs_video_recording', 'video_recording_type',
-     'presenter_material_setup', 'video_output_format',
-     'materials_mode', 'materials_level'].forEach(function (name) {
+     'venue_operation_mode', 'display_type', 'equipment_provider',
+     'chair_monitor_needed', 'chair_live_broadcast', 'video_output_format'].forEach(function (name) {
       if (data[name]) {
         var radio = $('input[name="' + name + '"][value="' + data[name] + '"]');
         if (radio) radio.checked = true;
@@ -489,7 +634,7 @@
     });
 
     // Multi-select checkboxes
-    ['event_type', 'post_event_outputs', 'qa_method', 'qr_send_method', 'qr_send_timing'].forEach(function (name) {
+    ['event_type', 'post_event_outputs', 'qa_method', 'qr_send_method', 'qr_send_timing', 'video_options'].forEach(function (name) {
       if (Array.isArray(data[name])) {
         data[name].forEach(function (val) {
           var cb = $('input[name="' + name + '"][value="' + val + '"]');
@@ -569,20 +714,15 @@
       });
     }
 
-    // Venue systems split
-    if (data.venue_systems) {
-      if (Array.isArray(data.venue_systems.venue_provided)) {
-        data.venue_systems.venue_provided.forEach(function (item) {
-          var r = $('input[name="venue_systems.' + item + '"][value="행사장 제공"]');
+    // Venue equipment (per-item radios)
+    if (data.venue_equipment) {
+      VENUE_EQUIP_ITEMS.forEach(function (item) {
+        var val = data.venue_equipment[item.id];
+        if (val) {
+          var r = $('input[name="venue_equip_' + item.id + '"][value="' + val + '"]');
           if (r) r.checked = true;
-        });
-      }
-      if (Array.isArray(data.venue_systems.external_setup)) {
-        data.venue_systems.external_setup.forEach(function (item) {
-          var r = $('input[name="venue_systems.' + item + '"][value="외부 준비"]');
-          if (r) r.checked = true;
-        });
-      }
+        }
+      });
     }
 
     // Update all conditionals and calculations after setting data
@@ -824,48 +964,13 @@
     }
   }
 
-  // --- Section I: Badge qty ---
-  function updateBadgeQty() {
-    var attendees = getNumVal('expected_attendees');
-    var el = document.getElementById('badge_qty');
-    if (el && !el._userEdited) {
-      el.value = attendees > 0 ? calcBadgeQty(attendees) : '';
-    }
-  }
-
-  // --- Section L: System split display ---
-  function updateSystemSplitDisplay() {
-    var venueCol = document.getElementById('venueProvided');
-    var extCol = document.getElementById('externalSetup');
-    if (!venueCol || !extCol) return;
-
-    // Remove existing items (keep the title)
-    venueCol.querySelectorAll('.system-split-item').forEach(function (el) { el.remove(); });
-    extCol.querySelectorAll('.system-split-item').forEach(function (el) { el.remove(); });
-
-    VENUE_SYSTEM_ITEMS.forEach(function (item) {
-      var radio = $('input[name="venue_systems.' + item + '"]:checked');
-      if (radio) {
-        var div = document.createElement('div');
-        div.className = 'system-split-item';
-        div.textContent = item;
-        if (radio.value === '행사장 제공') {
-          venueCol.appendChild(div);
-        } else if (radio.value === '외부 준비') {
-          extCol.appendChild(div);
-        }
-      }
-    });
-  }
-
   // --- Update all auto-calculated fields ---
   function updateAllCalculations() {
     updateEventDays();
     updateTotalRooms();
     updateHandsonAssistants();
     updateQRReaderCount();
-    updateBadgeQty();
-    updateSystemSplitDisplay();
+    updateMaterialQuantities();
   }
 
 
@@ -939,30 +1044,33 @@
     }
 
     setChipValue('chipAttendees', data.expected_attendees ? data.expected_attendees + '명' : null);
-    setChipValue('chipFaculty', data.faculty_count ? data.faculty_count + '명' : null);
+    var totalFac = getTotalFaculty();
+    setChipValue('chipFaculty', totalFac > 0 ? totalFac + '명' : null);
     setChipValue('chipRooms', data.total_operational_rooms ? data.total_operational_rooms + '개' : null);
 
-    // --- Estimate cards ---
+    // --- V2: 7 estimate categories ---
     var staffEst = estimateStaff(data);
-    var regEst = estimateRegistration(data);
-    var creditEst = estimateCredit(data);
     var matEst = estimateMaterials(data);
+    var opsEst = estimateOperations(data);
     var boothEst = estimateBooth(data);
     var mediaEst = estimateMedia(data);
     var transEst = estimateTransport();
-    var otherEst = estimateOther(data);
+
+    // Calculate subtotal before fees for estimateOther
+    var subtotalBeforeFees = staffEst.total + matEst.total + opsEst.total +
+      boothEst.total + mediaEst.total + transEst.total;
+    var otherEst = estimateOther(data, subtotalBeforeFees);
 
     setEstimateCard('estStaff', staffEst.total);
-    setEstimateCard('estReg', regEst.total);
-    setEstimateCard('estCredit', creditEst.total);
     setEstimateCard('estMaterials', matEst.total);
+    setEstimateCard('estOperations', opsEst.total);
     setEstimateCard('estBooth', boothEst.total);
     setEstimateCard('estMedia', mediaEst.total);
     setEstimateCard('estTransport', transEst.total);
     setEstimateCard('estOther', otherEst.total);
 
-    var grandTotal = staffEst.total + regEst.total + creditEst.total +
-      matEst.total + boothEst.total + mediaEst.total + transEst.total + otherEst.total;
+    var grandTotal = staffEst.total + matEst.total + opsEst.total +
+      boothEst.total + mediaEst.total + transEst.total + otherEst.total;
 
     var totalEl = document.getElementById('summaryTotal');
     if (totalEl) {
@@ -973,8 +1081,13 @@
     var undecidedList = document.getElementById('undecidedItems');
     if (undecidedList) {
       var undecided = [];
-      if (data.venue_system_mode === '대행사측에서 확인해주세요. 대관만 했어요.') {
-        undecided.push('행사장 시스템 — 확인 필요');
+      // Check venue equipment for '확인필요'
+      if (data.venue_equipment) {
+        VENUE_EQUIP_ITEMS.forEach(function (item) {
+          if (data.venue_equipment[item.id] === '확인필요') {
+            undecided.push('장비 ' + item.label + ' — 확인 필요');
+          }
+        });
       }
       if (data.pre_day_setup === '미확인') {
         undecided.push('전일 세팅 가능 여부 — 미확인');
@@ -993,7 +1106,7 @@
     var excludedList = document.getElementById('excludedItems');
     if (excludedList) {
       var excluded = [];
-      if (getRadioValue('needs_video_recording') === '불필요') excluded.push('영상촬영');
+      if (getRadioValue('venue_operation_mode') === '촬영 없이 현장운영만') excluded.push('촬영/영상');
       if (getRadioValue('has_handson') === '없음') excluded.push('핸즈온 실습');
       if (getRadioValue('has_booths') === '없음') excluded.push('부스 / 전시');
       if (getRadioValue('has_kma_credit') === '없음') excluded.push('의협 평점');
@@ -1026,8 +1139,8 @@
 
     // Store estimates for print layout
     window._lastEstimates = {
-      staff: staffEst, registration: regEst, credit: creditEst,
-      materials: matEst, booth: boothEst, media: mediaEst,
+      staff: staffEst, materials: matEst, operations: opsEst,
+      booth: boothEst, media: mediaEst,
       transport: transEst, other: otherEst, grandTotal: grandTotal
     };
     window._lastFormData = data;
@@ -1054,7 +1167,7 @@
   }
 
   function isFieldFilled(key, data) {
-    if (key === 'event_type' || key === 'post_event_outputs' || key === 'qa_method' || key === 'qr_send_method' || key === 'qr_send_timing') {
+    if (key === 'event_type' || key === 'post_event_outputs' || key === 'qa_method' || key === 'qr_send_method' || key === 'qr_send_timing' || key === 'video_options') {
       return Array.isArray(data[key]) && data[key].length > 0;
     }
     var val = data[key];
@@ -1221,23 +1334,26 @@
       "pre_day_setup": "가능",
       "venue_name": "가톨릭대학교 성의교정 옴니버스파크 플렌티홀",
       "expected_attendees": 300,
-      "faculty_count": 38,
+      "speaker_count": 15,
+      "chair_count": 10,
+      "panel_count": 5,
+      "mc_total_count": 2,
+      "vip_count": 6,
       "booth_staff_count": 40,
-      "chairs_per_session": "2인",
-      "has_mc": "있음",
-      "mc_count": 2,
-      "room_based_calc": null,
       "lecture_rooms": 3,
       "practice_rooms": 1,
-      "has_preview_room": "있음",
+      "has_preview_room": "필요",
       "has_special_rooms": "없음",
       "special_room_count": 0,
       "total_operational_rooms": 4,
       "total_rooms_override": false,
-      "needs_video_recording": "필요",
-      "video_recording_type": "강의룸별 강의 영상 필요",
-      "presenter_material_setup": "필요",
+      "venue_operation_mode": "촬영 필요",
+      "display_type": "빔프로젝터 사용",
+      "equipment_provider": "대행사 준비",
+      "chair_monitor_needed": "필요",
+      "chair_live_broadcast": "필요",
       "video_output_format": "연자얼굴 + 발표자료 + 목소리",
+      "video_options": ["강의룸별 강의영상 녹화", "전체적인 현장사진"],
       "has_handson": "있음",
       "group_size": 6,
       "group_count": 5,
@@ -1281,25 +1397,24 @@
       "needs_badge_printing": "필요",
       "qr_send_method": ["문자", "이메일"],
       "qr_send_timing": ["하루 전"],
-      "materials_mode": "직접 작성",
       "program_book": true,
       "pb_format": "둘 다",
-      "pb_print_qty": 300,
+      "pb_print_qty": 330,
       "abstract_book": true,
       "ab_format": "인쇄",
-      "ab_print_qty": 300,
+      "ab_print_qty": 363,
       "badges": true,
       "badge_qty": 360,
       "x_banners": true,
       "xb_qty": 8,
       "hanging_banner": true,
-      "hb_qty": 1,
+      "hb_qty": 4,
       "podium_board": true,
-      "pod_qty": 2,
+      "pod_qty": 3,
       "schedule_banner": true,
-      "sb_qty": 1,
+      "sb_qty": 5,
       "name_plate": true,
-      "np_qty": 18,
+      "np_qty": 38,
       "custom_materials": [
         { "item_name": "패널 소명패", "item_qty": 20, "item_memo": "" },
         { "item_name": "방향배너 화살표", "item_qty": 6, "item_memo": "" }
@@ -1308,10 +1423,14 @@
       "video_type": "연자 얼굴 + 강의자료 + 음성",
       "has_live_qa": "현장질문 받아요",
       "qa_method": ["모바일로 받아 좌장이 연자에게 질문"],
-      "venue_system_mode": "일부 제공",
-      "venue_systems": {
-        "venue_provided": ["음향", "마이크", "스크린"],
-        "external_setup": ["발표 스크린", "홍보용 스크린", "빔프로젝터", "모니터", "노트북"]
+      "venue_equipment": {
+        "audio": "행사장 제공",
+        "mic": "행사장 제공",
+        "screen": "행사장 제공",
+        "beam": "대행사 준비",
+        "monitor": "대행사 준비",
+        "pscreen": "대행사 준비",
+        "promo": "대행사 준비"
       },
       "extra_notes": "주차권 300매 제공 요청. 커피브레이크 오전 1회 포함. 중식은 학회 자체 준비."
     };
@@ -1353,7 +1472,11 @@
       }
 
       // Track user edits on auto-calculated fields
-      if (target.id === 'qr_reader_count' || target.id === 'badge_qty') {
+      if (target.id === 'qr_reader_count' || target.id === 'badge_qty' ||
+          target.id === 'pb_print_qty' || target.id === 'ab_print_qty' ||
+          target.id === 'xb_qty' || target.id === 'hb_qty' ||
+          target.id === 'pod_qty' || target.id === 'sb_qty' ||
+          target.id === 'np_qty') {
         target._userEdited = true;
       }
     });
@@ -1389,9 +1512,12 @@
         updateQRReaderCount();
       }
 
-      // Attendees -> badge qty
-      if (target.name === 'expected_attendees') {
-        updateBadgeQty();
+      // Attendees, booth count, lecture rooms -> material quantities
+      if (target.name === 'expected_attendees' || target.name === 'booth_count' ||
+          target.name === 'lecture_rooms' || target.name === 'speaker_count' ||
+          target.name === 'chair_count' || target.name === 'panel_count' ||
+          target.name === 'mc_total_count' || target.name === 'vip_count') {
+        updateMaterialQuantities();
       }
 
       // Material cards
@@ -1406,11 +1532,6 @@
           // Update detail conditionals within card
           updateConditionals();
         }, 10);
-      }
-
-      // Venue system split
-      if (target.name && target.name.startsWith('venue_systems.')) {
-        updateSystemSplitDisplay();
       }
 
       // Override toggle
@@ -1559,13 +1680,12 @@
       var allBreakdowns = [];
       var categories = [
         { name: '인력', est: estimates.staff },
-        { name: '등록 운영', est: estimates.registration },
-        { name: '평점 운영', est: estimates.credit },
         { name: '제작물', est: estimates.materials },
-        { name: '부스 / 전시', est: estimates.booth },
+        { name: '운영', est: estimates.operations },
+        { name: '부스 전시', est: estimates.booth },
         { name: '사진 / 영상', est: estimates.media },
         { name: '운송 / 출장', est: estimates.transport },
-        { name: '기타', est: estimates.other }
+        { name: '기타(소모품, 예비비, 기업이윤)', est: estimates.other }
       ];
 
       var rows = '';

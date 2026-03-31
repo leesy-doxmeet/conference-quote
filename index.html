@@ -270,17 +270,9 @@
             <!-- Expected Attendees -->
             <div class="form-group">
               <label class="form-label" for="expected_attendees">
-                예상 등록자 수 (최대) <span class="required-dot"></span>
+                예상 등록자 수(패컬티 포함 최대) <span class="required-dot"></span>
               </label>
               <input type="number" id="expected_attendees" name="expected_attendees" class="form-input" min="1" placeholder="예: 300" required>
-            </div>
-
-            <!-- Faculty Count -->
-            <div class="form-group">
-              <label class="form-label" for="faculty_count">
-                좌장/연자등 패컬티 수(예상) <span class="required-dot"></span>
-              </label>
-              <input type="number" id="faculty_count" name="faculty_count" class="form-input" min="0" placeholder="예: 38" required>
             </div>
 
             <!-- Booth Staff -->
@@ -291,55 +283,44 @@
               <input type="number" id="booth_staff_count" name="booth_staff_count" class="form-input" min="0" placeholder="예: 40">
             </div>
 
-            <!-- Chairs per session (radio) -->
+            <!-- Speaker Count -->
             <div class="form-group">
-              <label class="form-label">
-                한 세션 좌장 수 <span class="required-dot"></span>
+              <label class="form-label" for="speaker_count">
+                총 연자 수 <span class="required-dot"></span>
               </label>
-              <div class="radio-group">
-                <div class="radio-pill">
-                  <input type="radio" id="chairs_1" name="chairs_per_session" value="1인" required>
-                  <label for="chairs_1">1인</label>
-                </div>
-                <div class="radio-pill">
-                  <input type="radio" id="chairs_2" name="chairs_per_session" value="2인">
-                  <label for="chairs_2">2인</label>
-                </div>
-              </div>
+              <input type="number" id="speaker_count" name="speaker_count" class="form-input" min="0" placeholder="예: 15" required>
             </div>
 
-            <!-- MC toggle -->
+            <!-- Chair Count -->
             <div class="form-group">
-              <label class="form-label">
-                사회자 존재 여부 <span class="required-dot"></span>
+              <label class="form-label" for="chair_count">
+                총 좌장 수 <span class="required-dot"></span>
               </label>
-              <div class="radio-group">
-                <div class="radio-pill">
-                  <input type="radio" id="has_mc_yes" name="has_mc" value="있음" required>
-                  <label for="has_mc_yes">있음</label>
-                </div>
-                <div class="radio-pill">
-                  <input type="radio" id="has_mc_no" name="has_mc" value="없음">
-                  <label for="has_mc_no">없음</label>
-                </div>
-              </div>
+              <input type="number" id="chair_count" name="chair_count" class="form-input" min="0" placeholder="예: 10" required>
             </div>
 
-            <!-- MC Count (conditional) -->
-            <div class="form-group conditional-field" data-conditional-field="has_mc" data-conditional-value="있음">
-              <label class="form-label" for="mc_count">
-                사회자 총 인원 수
+            <!-- Panel Count -->
+            <div class="form-group">
+              <label class="form-label" for="panel_count">
+                총 패널 수 <span class="required-dot"></span>
               </label>
-              <input type="number" id="mc_count" name="mc_count" class="form-input" min="1" placeholder="예: 2">
+              <input type="number" id="panel_count" name="panel_count" class="form-input" min="0" placeholder="예: 5" required>
             </div>
 
-            <!-- Room-based calc helper -->
+            <!-- MC Total Count -->
             <div class="form-group">
-              <label class="form-label" for="room_based_calc">
-                룸 수 기준 계산
+              <label class="form-label" for="mc_total_count">
+                총 사회자 수 <span class="required-dot"></span>
               </label>
-              <input type="number" id="room_based_calc" name="room_based_calc" class="form-input" min="0" placeholder="운영 계획용 참고값">
-              <div class="form-helper">운영 계획용 선택 입력</div>
+              <input type="number" id="mc_total_count" name="mc_total_count" class="form-input" min="0" placeholder="예: 2" required>
+            </div>
+
+            <!-- VIP Count -->
+            <div class="form-group">
+              <label class="form-label" for="vip_count">
+                패컬티 이외 VIP 수(예상)
+              </label>
+              <input type="number" id="vip_count" name="vip_count" class="form-input" min="0" placeholder="예: 6">
             </div>
 
           </div>
@@ -392,12 +373,12 @@
               </label>
               <div class="radio-group">
                 <div class="radio-pill">
-                  <input type="radio" id="preview_yes" name="has_preview_room" value="있음" required>
-                  <label for="preview_yes">있음</label>
+                  <input type="radio" id="preview_yes" name="has_preview_room" value="필요" required>
+                  <label for="preview_yes">필요</label>
                 </div>
                 <div class="radio-pill">
-                  <input type="radio" id="preview_no" name="has_preview_room" value="없음">
-                  <label for="preview_no">없음</label>
+                  <input type="radio" id="preview_no" name="has_preview_room" value="불필요">
+                  <label for="preview_no">불필요</label>
                 </div>
               </div>
             </div>
@@ -405,7 +386,7 @@
             <!-- Special rooms toggle -->
             <div class="form-group">
               <label class="form-label">
-                별도 전시 및 특수발표공간 여부 <span class="required-dot"></span>
+                특수공간(기자회견 등) <span class="required-dot"></span>
               </label>
               <div class="radio-group">
                 <div class="radio-pill">
@@ -422,7 +403,7 @@
             <!-- Special room count (conditional) -->
             <div class="form-group conditional-field" data-conditional-field="has_special_rooms" data-conditional-value="있음">
               <label class="form-label" for="special_room_count">
-                별도 전시 및 특수발표공간 수
+                특수공간 수
               </label>
               <input type="number" id="special_room_count" name="special_room_count" class="form-input" min="1" placeholder="예: 2">
             </div>
@@ -451,19 +432,25 @@
               <div class="form-helper">강의룸 + 실습룸 + 특수공간 기준 자동 계산 (임시값)</div>
             </div>
 
+            <!-- Section C Notes -->
+            <div class="form-group full-width">
+              <label class="form-label">비고</label>
+              <textarea name="section_c_notes" class="form-input" rows="3" placeholder="추가 사항을 자유롭게 작성해 주세요"></textarea>
+            </div>
+
           </div>
         </div>
       </div>
     </div>
 
 
-    <!-- ========== SECTION D: 영상촬영 (NEW) ========== -->
+    <!-- ========== SECTION D: 행사장 운영 ========== -->
     <div class="section-card" id="sectionD" data-section="d">
       <div class="section-header" onclick="toggleSection('sectionD')">
         <span class="section-badge">D</span>
         <div class="section-header-text">
-          <div class="section-title">영상촬영</div>
-          <div class="section-subtitle">행사 영상 촬영 관련 정보를 입력합니다</div>
+          <div class="section-title">행사장 운영</div>
+          <div class="section-subtitle">행사장 운영 및 촬영 관련 정보를 입력합니다</div>
         </div>
         <div class="section-completion">
           <div class="section-completion-check">
@@ -478,59 +465,93 @@
         <div class="section-content">
           <div class="form-grid">
 
-            <!-- Video recording needed -->
+            <!-- Venue operation mode -->
             <div class="form-group full-width">
               <label class="form-label">
-                영상촬영 필요 여부 <span class="required-dot"></span>
-              </label>
-              <div class="radio-group">
-                <div class="radio-pill">
-                  <input type="radio" id="video_rec_yes" name="needs_video_recording" value="필요" required>
-                  <label for="video_rec_yes">필요</label>
-                </div>
-                <div class="radio-pill">
-                  <input type="radio" id="video_rec_no" name="needs_video_recording" value="불필요">
-                  <label for="video_rec_no">불필요</label>
-                </div>
-              </div>
-            </div>
-
-            <!-- Recording type (conditional) -->
-            <div class="form-group full-width conditional-field" data-conditional-field="needs_video_recording" data-conditional-value="필요">
-              <label class="form-label">
-                촬영 유형
+                운영 방식 <span class="required-dot"></span>
               </label>
               <div class="radio-group radio-group-stacked">
                 <div class="radio-pill">
-                  <input type="radio" id="rec_type_lecture" name="video_recording_type" value="강의룸별 강의 영상 필요">
-                  <label for="rec_type_lecture">강의룸별 강의 영상 필요</label>
+                  <input type="radio" id="venue_op_filming" name="venue_operation_mode" value="촬영 필요" required>
+                  <label for="venue_op_filming">촬영 필요</label>
                 </div>
                 <div class="radio-pill">
-                  <input type="radio" id="rec_type_onsite" name="video_recording_type" value="현장에서 발표만">
-                  <label for="rec_type_onsite">현장에서 발표만</label>
+                  <input type="radio" id="venue_op_minimal" name="venue_operation_mode" value="촬영 없이 현장운영만">
+                  <label for="venue_op_minimal">촬영 없이 현장운영만(최저가)</label>
                 </div>
               </div>
             </div>
 
-            <!-- Presenter material setup (conditional) -->
-            <div class="form-group full-width conditional-field" data-conditional-field="needs_video_recording" data-conditional-value="필요">
+            <!-- Display type (conditional on 촬영 필요) -->
+            <div class="form-group full-width conditional-field" data-conditional-field="venue_operation_mode" data-conditional-value="촬영 필요">
               <label class="form-label">
-                좌장 앞 발표자료 셋팅
+                디스플레이 방식
               </label>
               <div class="radio-group">
                 <div class="radio-pill">
-                  <input type="radio" id="pres_setup_yes" name="presenter_material_setup" value="필요">
-                  <label for="pres_setup_yes">필요</label>
+                  <input type="radio" id="display_led" name="display_type" value="LED 사용">
+                  <label for="display_led">LED 사용</label>
                 </div>
                 <div class="radio-pill">
-                  <input type="radio" id="pres_setup_no" name="presenter_material_setup" value="불필요">
-                  <label for="pres_setup_no">불필요</label>
+                  <input type="radio" id="display_beam" name="display_type" value="빔프로젝터 사용">
+                  <label for="display_beam">빔프로젝터 사용</label>
                 </div>
               </div>
             </div>
 
-            <!-- Final output format (conditional) -->
-            <div class="form-group full-width conditional-field" data-conditional-field="needs_video_recording" data-conditional-value="필요">
+            <!-- Equipment provider (conditional on 촬영 필요) -->
+            <div class="form-group full-width conditional-field" data-conditional-field="venue_operation_mode" data-conditional-value="촬영 필요">
+              <label class="form-label">
+                기자재 준비
+              </label>
+              <div class="radio-group">
+                <div class="radio-pill">
+                  <input type="radio" id="equip_hotel" name="equipment_provider" value="호텔기자재 이용">
+                  <label for="equip_hotel">호텔기자재 이용</label>
+                </div>
+                <div class="radio-pill">
+                  <input type="radio" id="equip_agency" name="equipment_provider" value="대행사 준비">
+                  <label for="equip_agency">대행사 준비</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chair monitor needed (conditional on 촬영 필요) -->
+            <div class="form-group full-width conditional-field" data-conditional-field="venue_operation_mode" data-conditional-value="촬영 필요">
+              <label class="form-label">
+                좌장 앞 발표자료 모니터 사용 여부
+              </label>
+              <div class="radio-group">
+                <div class="radio-pill">
+                  <input type="radio" id="chair_monitor_yes" name="chair_monitor_needed" value="필요">
+                  <label for="chair_monitor_yes">필요</label>
+                </div>
+                <div class="radio-pill">
+                  <input type="radio" id="chair_monitor_no" name="chair_monitor_needed" value="불필요">
+                  <label for="chair_monitor_no">불필요</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chair live broadcast (conditional on 촬영 필요) -->
+            <div class="form-group full-width conditional-field" data-conditional-field="venue_operation_mode" data-conditional-value="촬영 필요">
+              <label class="form-label">
+                좌장 녹화/질의응답 현장 송출 필요 여부
+              </label>
+              <div class="radio-group">
+                <div class="radio-pill">
+                  <input type="radio" id="chair_broadcast_yes" name="chair_live_broadcast" value="필요">
+                  <label for="chair_broadcast_yes">필요</label>
+                </div>
+                <div class="radio-pill">
+                  <input type="radio" id="chair_broadcast_no" name="chair_live_broadcast" value="불필요">
+                  <label for="chair_broadcast_no">불필요</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Video output format (conditional on 촬영 필요) -->
+            <div class="form-group full-width conditional-field" data-conditional-field="venue_operation_mode" data-conditional-value="촬영 필요">
               <label class="form-label">
                 최종 결과물 형식
               </label>
@@ -544,6 +565,40 @@
                   <label for="output_slides_only">발표자료 + 목소리만</label>
                 </div>
               </div>
+            </div>
+
+            <!-- Video recording options (checkboxes) -->
+            <div class="form-group full-width conditional-field" data-conditional-field="venue_operation_mode" data-conditional-value="촬영 필요">
+              <label class="form-label">영상 촬영 옵션</label>
+              <div class="checkbox-group">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="video_opt_lecture" name="video_options" value="강의룸별 강의영상 녹화">
+                  <label for="video_opt_lecture">
+                    <span class="checkbox-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    강의룸별 강의영상 녹화 필요
+                  </label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="video_opt_sketch" name="video_options" value="스케치 영상">
+                  <label for="video_opt_sketch">
+                    <span class="checkbox-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    스케치 영상 필요
+                  </label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="video_opt_photo" name="video_options" value="전체적인 현장사진">
+                  <label for="video_opt_photo">
+                    <span class="checkbox-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    전체적인 현장사진 필요
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section D/E Notes -->
+            <div class="form-group full-width">
+              <label class="form-label">비고</label>
+              <textarea name="section_e_notes" class="form-input" rows="3" placeholder="추가 사항을 자유롭게 작성해 주세요"></textarea>
             </div>
 
           </div>
@@ -994,6 +1049,12 @@
               <div class="helper-text-block">등록 명단이 확정된 후 발송 가능합니다</div>
             </div>
 
+            <!-- Section H Notes -->
+            <div class="form-group full-width">
+              <label class="form-label">비고</label>
+              <textarea name="section_h_notes" class="form-input" rows="3" placeholder="추가 사항을 자유롭게 작성해 주세요"></textarea>
+            </div>
+
           </div>
         </div>
       </div>
@@ -1020,38 +1081,8 @@
       <div class="section-body">
         <div class="section-content">
 
-          <!-- Materials mode toggle -->
-          <div class="form-group full-width" style="margin-bottom: var(--space-4);">
-            <label class="form-label">제작물 입력 방식</label>
-            <div class="radio-group">
-              <div class="radio-pill">
-                <input type="radio" id="materials_mode_auto" name="materials_mode" value="알아서 해주세요">
-                <label for="materials_mode_auto">알아서 해주세요</label>
-              </div>
-              <div class="radio-pill">
-                <input type="radio" id="materials_mode_manual" name="materials_mode" value="직접 작성" checked>
-                <label for="materials_mode_manual">직접 작성</label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Auto mode sub-options (visible only when 알아서 해주세요) -->
-          <div class="form-group full-width conditional-field" data-conditional-field="materials_mode" data-conditional-value="알아서 해주세요" id="materialsAutoOptions" style="margin-bottom: var(--space-4);">
-            <label class="form-label">제작물 수준</label>
-            <div class="radio-group">
-              <div class="radio-pill">
-                <input type="radio" id="materials_level_normal" name="materials_level" value="일반">
-                <label for="materials_level_normal">일반</label>
-              </div>
-              <div class="radio-pill">
-                <input type="radio" id="materials_level_min" name="materials_level" value="최소수량">
-                <label for="materials_level_min">최소수량</label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Detailed material form (visible only when 직접 작성) -->
-          <div class="conditional-field visible" data-conditional-field="materials_mode" data-conditional-value="직접 작성" id="materialsDetailForm">
+          <!-- Material detail form (always visible) -->
+          <div id="materialsDetailForm">
 
           <!-- Material selectable cards -->
           <div class="material-cards">
@@ -1087,6 +1118,7 @@
                 <div class="form-group conditional-field" data-conditional-field="pb_format" data-conditional-value="인쇄,둘 다">
                   <label class="form-label" for="pb_print_qty">인쇄 부수</label>
                   <input type="number" id="pb_print_qty" name="pb_print_qty" class="form-input" min="1" placeholder="예: 300" onclick="event.stopPropagation()">
+                  <div class="form-helper">자동계산: 예상 등록자 수 × 1.1</div>
                 </div>
               </div>
             </label>
@@ -1122,6 +1154,7 @@
                 <div class="form-group conditional-field" data-conditional-field="ab_format" data-conditional-value="인쇄,둘 다">
                   <label class="form-label" for="ab_print_qty">인쇄 부수</label>
                   <input type="number" id="ab_print_qty" name="ab_print_qty" class="form-input" min="1" placeholder="예: 300" onclick="event.stopPropagation()">
+                  <div class="form-helper">자동계산: (예상 등록자 수 + 부스 수 × 1.5) × 1.1</div>
                 </div>
               </div>
             </label>
@@ -1146,7 +1179,7 @@
                     </span>
                   </label>
                   <input type="number" id="badge_qty" name="badge_qty" class="form-input auto-calculated" min="1" placeholder="등록자 × 1.2 기준" onclick="event.stopPropagation()">
-                  <div class="form-helper">ceil(예상 등록자 수 × 1.2) 기준 추천값 (임시값)</div>
+                  <div class="form-helper">자동계산: 예상 등록자 수 × 1.2</div>
                 </div>
               </div>
             </label>
@@ -1165,6 +1198,7 @@
                 <div class="form-group">
                   <label class="form-label" for="xb_qty">수량</label>
                   <input type="number" id="xb_qty" name="xb_qty" class="form-input" min="1" placeholder="예: 8" onclick="event.stopPropagation()">
+                  <div class="form-helper">자동계산: 일반=8, 최저가=2</div>
                 </div>
               </div>
             </label>
@@ -1183,6 +1217,7 @@
                 <div class="form-group">
                   <label class="form-label" for="hb_qty">수량</label>
                   <input type="number" id="hb_qty" name="hb_qty" class="form-input" min="1" placeholder="예: 1" onclick="event.stopPropagation()">
+                  <div class="form-helper">자동계산: 일반=룸수+1, 최저가=1</div>
                 </div>
               </div>
             </label>
@@ -1201,6 +1236,7 @@
                 <div class="form-group">
                   <label class="form-label" for="pod_qty">수량</label>
                   <input type="number" id="pod_qty" name="pod_qty" class="form-input" min="1" placeholder="예: 2" onclick="event.stopPropagation()">
+                  <div class="form-helper">자동계산: 일반=룸수, 최저가=0</div>
                 </div>
               </div>
             </label>
@@ -1219,6 +1255,7 @@
                 <div class="form-group">
                   <label class="form-label" for="sb_qty">수량</label>
                   <input type="number" id="sb_qty" name="sb_qty" class="form-input" min="1" placeholder="예: 1" onclick="event.stopPropagation()">
+                  <div class="form-helper">자동계산: 일반=2+룸수, 최저가=2</div>
                 </div>
               </div>
             </label>
@@ -1237,6 +1274,7 @@
                 <div class="form-group">
                   <label class="form-label" for="np_qty">수량</label>
                   <input type="number" id="np_qty" name="np_qty" class="form-input" min="1" placeholder="예: 18" onclick="event.stopPropagation()">
+                  <div class="form-helper">자동계산: 일반=총패컬티수, 최저가=0</div>
                 </div>
               </div>
             </label>
@@ -1253,6 +1291,12 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               + 제작물 추가
             </button>
+          </div>
+
+          <!-- Section I Notes -->
+          <div class="form-group full-width" style="margin-top: var(--space-6);">
+            <label class="form-label">비고</label>
+            <textarea name="section_i_notes" class="form-input" rows="3" placeholder="추가 사항을 자유롭게 작성해 주세요"></textarea>
           </div>
 
           </div><!-- /materialsDetailForm -->
@@ -1422,122 +1466,96 @@
         <div class="section-content">
           <div class="form-grid">
 
-            <!-- Venue system mode (3-way radio) -->
+            <!-- Per-item equipment radios (4 options each) -->
             <div class="form-group full-width">
-              <label class="form-label">
-                행사장 시스템 제공 모드 <span class="required-dot"></span>
-              </label>
-              <div class="radio-group radio-group-stacked">
-                <div class="radio-pill">
-                  <input type="radio" id="venue_check" name="venue_system_mode" value="대행사측에서 확인해주세요. 대관만 했어요." required>
-                  <label for="venue_check">대행사측에서 확인해주세요. 대관만 했어요.</label>
+              <label class="form-label">장비별 제공 방식</label>
+              <div class="form-helper" style="margin-bottom: var(--space-3);">각 장비 항목의 제공 방식을 선택하세요</div>
+
+              <div class="repeatable-container" id="venueEquipmentList">
+                <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
+                    <span style="font-size:var(--text-sm);font-weight:500;min-width:100px;">음향</span>
+                    <div class="radio-group" style="flex-shrink:0;">
+                      <div class="radio-pill"><input type="radio" id="equip_audio_venue" name="venue_equip_audio" value="행사장 제공"><label for="equip_audio_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_audio_agency" name="venue_equip_audio" value="대행사 준비"><label for="equip_audio_agency" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">대행사 준비</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_audio_none" name="venue_equip_audio" value="없음"><label for="equip_audio_none" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">없음</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_audio_check" name="venue_equip_audio" value="확인필요"><label for="equip_audio_check" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">확인필요</label></div>
+                    </div>
+                  </div>
                 </div>
-                <div class="radio-pill">
-                  <input type="radio" id="venue_partial" name="venue_system_mode" value="일부 제공">
-                  <label for="venue_partial">일부 제공</label>
+                <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
+                    <span style="font-size:var(--text-sm);font-weight:500;min-width:100px;">마이크</span>
+                    <div class="radio-group" style="flex-shrink:0;">
+                      <div class="radio-pill"><input type="radio" id="equip_mic_venue" name="venue_equip_mic" value="행사장 제공"><label for="equip_mic_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_mic_agency" name="venue_equip_mic" value="대행사 준비"><label for="equip_mic_agency" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">대행사 준비</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_mic_none" name="venue_equip_mic" value="없음"><label for="equip_mic_none" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">없음</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_mic_check" name="venue_equip_mic" value="확인필요"><label for="equip_mic_check" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">확인필요</label></div>
+                    </div>
+                  </div>
                 </div>
-                <div class="radio-pill">
-                  <input type="radio" id="venue_external" name="venue_system_mode" value="전부 외부 준비">
-                  <label for="venue_external">전부 외부 준비</label>
+                <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
+                    <span style="font-size:var(--text-sm);font-weight:500;min-width:100px;">스크린</span>
+                    <div class="radio-group" style="flex-shrink:0;">
+                      <div class="radio-pill"><input type="radio" id="equip_screen_venue" name="venue_equip_screen" value="행사장 제공"><label for="equip_screen_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_screen_agency" name="venue_equip_screen" value="대행사 준비"><label for="equip_screen_agency" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">대행사 준비</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_screen_none" name="venue_equip_screen" value="없음"><label for="equip_screen_none" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">없음</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_screen_check" name="venue_equip_screen" value="확인필요"><label for="equip_screen_check" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">확인필요</label></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
+                    <span style="font-size:var(--text-sm);font-weight:500;min-width:100px;">빔프로젝터</span>
+                    <div class="radio-group" style="flex-shrink:0;">
+                      <div class="radio-pill"><input type="radio" id="equip_beam_venue" name="venue_equip_beam" value="행사장 제공"><label for="equip_beam_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_beam_agency" name="venue_equip_beam" value="대행사 준비"><label for="equip_beam_agency" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">대행사 준비</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_beam_none" name="venue_equip_beam" value="없음"><label for="equip_beam_none" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">없음</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_beam_check" name="venue_equip_beam" value="확인필요"><label for="equip_beam_check" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">확인필요</label></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
+                    <span style="font-size:var(--text-sm);font-weight:500;min-width:100px;">모니터</span>
+                    <div class="radio-group" style="flex-shrink:0;">
+                      <div class="radio-pill"><input type="radio" id="equip_monitor_venue" name="venue_equip_monitor" value="행사장 제공"><label for="equip_monitor_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_monitor_agency" name="venue_equip_monitor" value="대행사 준비"><label for="equip_monitor_agency" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">대행사 준비</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_monitor_none" name="venue_equip_monitor" value="없음"><label for="equip_monitor_none" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">없음</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_monitor_check" name="venue_equip_monitor" value="확인필요"><label for="equip_monitor_check" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">확인필요</label></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
+                    <span style="font-size:var(--text-sm);font-weight:500;min-width:100px;">발표 스크린</span>
+                    <div class="radio-group" style="flex-shrink:0;">
+                      <div class="radio-pill"><input type="radio" id="equip_pscreen_venue" name="venue_equip_pscreen" value="행사장 제공"><label for="equip_pscreen_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_pscreen_agency" name="venue_equip_pscreen" value="대행사 준비"><label for="equip_pscreen_agency" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">대행사 준비</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_pscreen_none" name="venue_equip_pscreen" value="없음"><label for="equip_pscreen_none" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">없음</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_pscreen_check" name="venue_equip_pscreen" value="확인필요"><label for="equip_pscreen_check" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">확인필요</label></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
+                    <span style="font-size:var(--text-sm);font-weight:500;min-width:100px;">홍보용 스크린</span>
+                    <div class="radio-group" style="flex-shrink:0;">
+                      <div class="radio-pill"><input type="radio" id="equip_promo_venue" name="venue_equip_promo" value="행사장 제공"><label for="equip_promo_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_promo_agency" name="venue_equip_promo" value="대행사 준비"><label for="equip_promo_agency" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">대행사 준비</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_promo_none" name="venue_equip_promo" value="없음"><label for="equip_promo_none" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">없음</label></div>
+                      <div class="radio-pill"><input type="radio" id="equip_promo_check" name="venue_equip_promo" value="확인필요"><label for="equip_promo_check" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">확인필요</label></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- System split list (conditional on "일부 제공") -->
-            <div class="form-group full-width conditional-field" data-conditional-field="venue_system_mode" data-conditional-value="일부 제공">
-              <label class="form-label">시스템 목록 분류</label>
-              <div class="form-helper" style="margin-bottom: var(--space-3);">각 항목을 해당하는 영역으로 분류해 주세요</div>
-              <div class="system-split" id="systemSplit">
-                <div class="system-split-column" id="venueProvided" data-split="venue_provided">
-                  <div class="system-split-title">행사장 제공</div>
-                  <!-- Items will be assigned here -->
-                </div>
-                <div class="system-split-column" id="externalSetup" data-split="external_setup">
-                  <div class="system-split-title">외부 준비</div>
-                  <!-- Items will be assigned here -->
-                </div>
-              </div>
-
-              <!-- System items with assignment radios -->
-              <div style="margin-top: var(--space-4);">
-                <div class="form-helper" style="margin-bottom: var(--space-3);">각 항목의 제공 방식을 선택하세요:</div>
-
-                <div class="repeatable-container" id="systemItemsList">
-                  <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
-                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
-                      <span style="font-size:var(--text-sm);font-weight:500;">발표 스크린</span>
-                      <div class="radio-group" style="flex-shrink:0;">
-                        <div class="radio-pill"><input type="radio" id="sys_screen_venue" name="venue_systems.발표 스크린" value="행사장 제공"><label for="sys_screen_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
-                        <div class="radio-pill"><input type="radio" id="sys_screen_ext" name="venue_systems.발표 스크린" value="외부 준비"><label for="sys_screen_ext" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">외부 준비</label></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
-                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
-                      <span style="font-size:var(--text-sm);font-weight:500;">홍보용 스크린</span>
-                      <div class="radio-group" style="flex-shrink:0;">
-                        <div class="radio-pill"><input type="radio" id="sys_promo_venue" name="venue_systems.홍보용 스크린" value="행사장 제공"><label for="sys_promo_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
-                        <div class="radio-pill"><input type="radio" id="sys_promo_ext" name="venue_systems.홍보용 스크린" value="외부 준비"><label for="sys_promo_ext" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">외부 준비</label></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
-                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
-                      <span style="font-size:var(--text-sm);font-weight:500;">음향</span>
-                      <div class="radio-group" style="flex-shrink:0;">
-                        <div class="radio-pill"><input type="radio" id="sys_audio_venue" name="venue_systems.음향" value="행사장 제공"><label for="sys_audio_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
-                        <div class="radio-pill"><input type="radio" id="sys_audio_ext" name="venue_systems.음향" value="외부 준비"><label for="sys_audio_ext" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">외부 준비</label></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
-                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
-                      <span style="font-size:var(--text-sm);font-weight:500;">마이크</span>
-                      <div class="radio-group" style="flex-shrink:0;">
-                        <div class="radio-pill"><input type="radio" id="sys_mic_venue" name="venue_systems.마이크" value="행사장 제공"><label for="sys_mic_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
-                        <div class="radio-pill"><input type="radio" id="sys_mic_ext" name="venue_systems.마이크" value="외부 준비"><label for="sys_mic_ext" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">외부 준비</label></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
-                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
-                      <span style="font-size:var(--text-sm);font-weight:500;">빔프로젝터</span>
-                      <div class="radio-group" style="flex-shrink:0;">
-                        <div class="radio-pill"><input type="radio" id="sys_beam_venue" name="venue_systems.빔프로젝터" value="행사장 제공"><label for="sys_beam_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
-                        <div class="radio-pill"><input type="radio" id="sys_beam_ext" name="venue_systems.빔프로젝터" value="외부 준비"><label for="sys_beam_ext" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">외부 준비</label></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
-                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
-                      <span style="font-size:var(--text-sm);font-weight:500;">스크린</span>
-                      <div class="radio-group" style="flex-shrink:0;">
-                        <div class="radio-pill"><input type="radio" id="sys_scr_venue" name="venue_systems.스크린" value="행사장 제공"><label for="sys_scr_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
-                        <div class="radio-pill"><input type="radio" id="sys_scr_ext" name="venue_systems.스크린" value="외부 준비"><label for="sys_scr_ext" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">외부 준비</label></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
-                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
-                      <span style="font-size:var(--text-sm);font-weight:500;">모니터</span>
-                      <div class="radio-group" style="flex-shrink:0;">
-                        <div class="radio-pill"><input type="radio" id="sys_monitor_venue" name="venue_systems.모니터" value="행사장 제공"><label for="sys_monitor_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
-                        <div class="radio-pill"><input type="radio" id="sys_monitor_ext" name="venue_systems.모니터" value="외부 준비"><label for="sys_monitor_ext" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">외부 준비</label></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="repeatable-row" style="padding: var(--space-3) var(--space-4);">
-                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
-                      <span style="font-size:var(--text-sm);font-weight:500;">노트북</span>
-                      <div class="radio-group" style="flex-shrink:0;">
-                        <div class="radio-pill"><input type="radio" id="sys_laptop_venue" name="venue_systems.노트북" value="행사장 제공"><label for="sys_laptop_venue" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">행사장 제공</label></div>
-                        <div class="radio-pill"><input type="radio" id="sys_laptop_ext" name="venue_systems.노트북" value="외부 준비"><label for="sys_laptop_ext" style="font-size:var(--text-xs);padding:4px 10px;min-height:28px;">외부 준비</label></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
+            <!-- Section L Notes -->
+            <div class="form-group full-width">
+              <label class="form-label">비고</label>
+              <textarea name="section_l_notes" class="form-input" rows="3" placeholder="추가 사항을 자유롭게 작성해 주세요"></textarea>
             </div>
 
           </div>
@@ -1669,34 +1687,6 @@
             <div class="estimate-card-amount placeholder" id="estStaff">—</div>
           </div>
 
-          <!-- 등록 운영 -->
-          <div class="estimate-card">
-            <div class="estimate-card-left">
-              <div class="estimate-card-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-              </div>
-              <div>
-                <div class="estimate-card-label">등록 운영</div>
-                <div class="estimate-card-sublabel">사전등록, 현장등록, 명찰</div>
-              </div>
-            </div>
-            <div class="estimate-card-amount placeholder" id="estReg">—</div>
-          </div>
-
-          <!-- 평점 운영 -->
-          <div class="estimate-card">
-            <div class="estimate-card-left">
-              <div class="estimate-card-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              </div>
-              <div>
-                <div class="estimate-card-label">평점 운영</div>
-                <div class="estimate-card-sublabel">의협, 기타 기관 평점 관리</div>
-              </div>
-            </div>
-            <div class="estimate-card-amount placeholder" id="estCredit">—</div>
-          </div>
-
           <!-- 제작물 -->
           <div class="estimate-card">
             <div class="estimate-card-left">
@@ -1711,15 +1701,29 @@
             <div class="estimate-card-amount placeholder" id="estMaterials">—</div>
           </div>
 
-          <!-- 부스/전시 -->
+          <!-- 운영 -->
+          <div class="estimate-card">
+            <div class="estimate-card-left">
+              <div class="estimate-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+              </div>
+              <div>
+                <div class="estimate-card-label">운영</div>
+                <div class="estimate-card-sublabel">등록 운영, 평점 운영</div>
+              </div>
+            </div>
+            <div class="estimate-card-amount placeholder" id="estOperations">—</div>
+          </div>
+
+          <!-- 부스 전시 -->
           <div class="estimate-card">
             <div class="estimate-card-left">
               <div class="estimate-card-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
               </div>
               <div>
-                <div class="estimate-card-label">부스 / 전시</div>
-                <div class="estimate-card-sublabel">부스 설치, 전기 간선</div>
+                <div class="estimate-card-label">부스 전시</div>
+                <div class="estimate-card-sublabel">부스 설치, 간선작업</div>
               </div>
             </div>
             <div class="estimate-card-amount placeholder" id="estBooth">—</div>
@@ -1760,8 +1764,8 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               </div>
               <div>
-                <div class="estimate-card-label">기타</div>
-                <div class="estimate-card-sublabel">소모품, 예비비</div>
+                <div class="estimate-card-label">기타(소모품, 예비비, 기업이윤)</div>
+                <div class="estimate-card-sublabel">식비, 교통비, 수수료, VAT</div>
               </div>
             </div>
             <div class="estimate-card-amount placeholder" id="estOther">—</div>

@@ -101,7 +101,19 @@
       equip_preview: 200000,
       equip_tablet: 110000,
 
-      // Category 10: 수수료 (Fees)
+      // Category 10: 장비 렌탈 추가 (Notebook Rental for credit calc)
+      equip_notebook_rental: 80000,
+
+      // Category 11: 촬영 / 영상 제작 (Media Production)
+      media_camera: 300000,
+      media_chair_monitor: 200000,
+      media_sound_director: 300000,
+      media_camera_director: 300000,
+      media_post_edit: 200000,
+      media_led_system: 500000,
+      media_qa_system: 300000,
+
+      // Category 12: 수수료 (Fees)
       fee_agency_rate: 10,
       fee_vat_rate: 10
     },
@@ -163,7 +175,19 @@
       equip_preview: 150000,
       equip_tablet: 80000,
 
-      // Category 10: 수수료 — same rates
+      // Category 10: 장비 렌탈 추가
+      equip_notebook_rental: 80000,
+
+      // Category 11: 촬영 / 영상 제작
+      media_camera: 300000,
+      media_chair_monitor: 200000,
+      media_sound_director: 300000,
+      media_camera_director: 300000,
+      media_post_edit: 200000,
+      media_led_system: 500000,
+      media_qa_system: 300000,
+
+      // Category 12: 수수료 — same rates
       fee_agency_rate: 10,
       fee_vat_rate: 10
     }
