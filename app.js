@@ -830,10 +830,10 @@
     var toast = document.createElement('div');
     toast.className = 'toast-notification toast-' + type;
     toast.innerHTML = '<span>' + message + '</span>';
-    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:#fff;color:#1a1a1a;' +
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--color-surface);color:var(--color-text);' +
       'padding:12px 20px;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,0.12);' +
       'font-size:14px;font-family:Pretendard,sans-serif;font-weight:500;' +
-      'border-left:4px solid ' + (type === 'success' ? '#1a6b5a' : type === 'error' ? '#dc2626' : '#d97706') + ';' +
+      'border-left:4px solid ' + (type === 'success' ? 'var(--color-primary)' : type === 'error' ? 'var(--color-error)' : 'var(--color-warning)') + ';' +
       'transform:translateY(20px);opacity:0;transition:all 300ms cubic-bezier(0.16,1,0.3,1);';
 
     document.body.appendChild(toast);
@@ -1129,8 +1129,8 @@
         '명찰 수량: 등록자 수 × 1.2 기준 (' + (data.badge_qty || '—') + '매)',
         'QR 리더 수: 평점 관리 룸 × 2 기준 (' + (data.qr_reader_count || '—') + '대)',
         '핸즈온 보조인력: 조 수 기준 (' + (data.handson_assistants || '—') + '명)',
-        '운송비: 200,000원 기본 반영',
-        '프로그램북 단가: 8,900원 기준'
+        '운송비: ' + formatKRW(TRANSPORT_PLACEHOLDER) + ' 기본 반영',
+        '프로그램북 단가: ' + formatKRW(PROGRAM_BOOK_UNIT_COST) + '/부 기준'
       ];
       assumptionList.innerHTML = assumptions.map(function (item) {
         return '<li class="warning">' + item + '</li>';

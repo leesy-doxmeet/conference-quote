@@ -36,7 +36,7 @@ function doPost(e) {
       // 헤더 스타일링
       var headerRange = sheet.getRange(1, 1, 1, headers.length);
       headerRange.setFontWeight('bold');
-      headerRange.setBackground('#1a6b5a');
+      headerRange.setBackground('#1f63d2');
       headerRange.setFontColor('#ffffff');
       sheet.setFrozenRows(1);
     }

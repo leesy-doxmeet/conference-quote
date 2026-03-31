@@ -19,26 +19,15 @@ Academic Conference Quotation Intake System
    python3 -m http.server 8080
    ```
 
-2. **Add required references to `index.html`:**
+2. **Start entering data** — Fill in the 13 sections (A–M) from top to bottom. The right sidebar updates estimates in real-time.
 
-   In the `<head>` section, add the print stylesheet:
-   ```html
-   <link rel="stylesheet" href="print.css">
-   ```
-
-   Before the closing `</body>` tag, add the application script:
-   ```html
-   <script src="app.js"></script>
-   ```
-
-3. **Start entering data** — Fill in the 12 sections (A–L) from top to bottom. The right sidebar updates estimates in real-time.
-
-4. **Use action buttons:**
+3. **Use action buttons:**
    - **샘플 데이터 불러오기** — Load a pre-filled sample for testing
-   - **임시저장** — Save to browser localStorage
+   - **임시저장** — Save the current draft to the in-memory session state
    - **초기화** — Clear all form data
    - **JSON 내보내기** — Download form data as JSON
    - **인쇄 / PDF 저장** — Print or save as PDF via browser print dialog
+   - **견적 제출** — Send via EmailJS / Google Sheets after enabling integrations in `submit.js`
 
 ---
 
@@ -67,15 +56,16 @@ conference-quote/
 | A — 행사 기본 정보 | Event name, dates, venue, daily schedule |
 | B — 참석 인원 및 패컬티 | Attendees, faculty, MCs |
 | C — 운영 공간 구성 | Room configuration |
-| D — 핸즈온 실습 | Hands-on workshop details |
-| E — 부스 / 전시 | Exhibition booth setup |
-| F — 평점 및 출결 관리 | Credit management (KMA + other institutions) |
-| G — 등록 운영 | Registration operations |
-| H — 제작물 | Materials (books, banners, badges) |
-| I — 행사 후 산출물 | Post-event deliverables |
-| J — 현장 질문 방식 | Live Q&A configuration |
-| K — 행사장 제공 시스템 | Venue equipment breakdown |
-| L — 기타 특이사항 | Additional notes |
+| D — 행사장 운영 / 영상 | Venue operation, display, recording options |
+| E — 핸즈온 실습 | Hands-on workshop details |
+| F — 부스 / 전시 | Exhibition booth setup |
+| G — 평점 및 출결 관리 | Credit management (KMA + other institutions) |
+| H — 등록 운영 | Registration operations |
+| I — 제작물 | Materials (books, banners, badges) |
+| J — 행사 후 산출물 | Post-event deliverables |
+| K — 현장 질문 방식 | Live Q&A configuration |
+| L — 행사장 제공 시스템 | Venue equipment breakdown |
+| M — 기타 특이사항 | Additional notes |
 
 ### Auto-Calculated Fields
 
@@ -83,15 +73,22 @@ These fields update automatically based on other inputs:
 
 - **행사 운영일 수** — From start/end dates
 - **운영 룸 수** — Sum of lecture + practice + special rooms
-- **핸즈온 보조인력 추천 수** — `ceil(tables / 4)`
+- **핸즈온 보조인력 추천 수** — `group_count`
 - **QR/바코드 리더 추천 수량** — `total credit rooms × 2`
 - **명찰 수량** — `ceil(attendees × 1.2)`
 
 All auto-calculated fields show an amber "자동계산" badge and can be manually overridden.
 
-### Draft Auto-Save
+### Draft Save
 
-The form auto-saves to `localStorage` every 30 seconds and on input changes (debounced). When returning to the page, you'll be prompted to restore the previous draft.
+The form keeps a temporary in-memory draft and auto-saves every 30 seconds plus on debounced input changes. Because `localStorage` / `sessionStorage` are intentionally not used, the draft is not guaranteed to survive a full refresh or browser restart without a backend draft API.
+
+### Deployment Checklist
+
+- GitHub Pages deploys automatically when pushing to `main`
+- Set `pricing-config.js` `SHEETS_API_URL` for pricing sync
+- Enable EmailJS and/or Google Sheets submission in `submit.js` before using **견적 제출**
+- The admin page login is client-side only; replace it with real authentication before public use
 
 ### Print / PDF
 
@@ -117,7 +114,7 @@ The system currently runs entirely client-side with provisional cost formulas. T
 
 2. **Replace estimate functions** — In `app.js` Section 2, each `estimate*()` function can be replaced with an API call. Keep the return signature: `{ total: number, breakdown: [{ item, qty, unit, amount }] }`.
 
-3. **Replace localStorage** — Swap `saveDraft()`/`loadDraft()` with API calls to your draft storage endpoint.
+3. **Replace in-memory draft storage** — Swap `saveDraft()`/`loadDraft()` with API calls to your draft storage endpoint.
 
 4. **API endpoints** (suggested):
    ```

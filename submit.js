@@ -39,7 +39,6 @@
 
   // Collect the full form data + estimates for submission
   function collectSubmissionData() {
-    // getFormData() is defined in app.js IIFE — we call the exposed version
     var formData = {};
 
     // Gather all form fields
@@ -58,7 +57,7 @@
     });
 
     // Checkboxes (multi-select)
-    ['event_type', 'post_event_outputs', 'qa_method'].forEach(function (name) {
+    ['event_type', 'video_options', 'qr_send_method', 'qr_send_timing', 'post_event_outputs', 'qa_method'].forEach(function (name) {
       var checked = [];
       document.querySelectorAll('input[name="' + name + '"]:checked').forEach(function (cb) {
         checked.push(cb.value);
@@ -67,10 +66,17 @@
     });
 
     // Material toggles
-    ['program_book', 'abstract_book', 'badges', 'x_banners', 'hanging_banner', 'podium_board', 'schedule_banner'].forEach(function (name) {
+    ['program_book', 'abstract_book', 'badges', 'x_banners', 'hanging_banner', 'podium_board', 'schedule_banner', 'name_plate'].forEach(function (name) {
       var cb = document.querySelector('input[name="' + name + '"]');
       formData[name] = cb && cb.checked ? '선택' : '미선택';
     });
+
+    formData.faculty_count =
+      (parseInt(formData.speaker_count, 10) || 0) +
+      (parseInt(formData.chair_count, 10) || 0) +
+      (parseInt(formData.panel_count, 10) || 0) +
+      (parseInt(formData.mc_total_count, 10) || 0) +
+      (parseInt(formData.vip_count, 10) || 0);
 
     // Get the current estimate total
     var totalEl = document.getElementById('summaryTotal');
@@ -86,8 +92,7 @@
       var breakdown = [];
       var cats = [
         { name: '인력', key: 'staff' },
-        { name: '등록 운영', key: 'registration' },
-        { name: '평점 운영', key: 'credit' },
+        { name: '운영', key: 'operations' },
         { name: '제작물', key: 'materials' },
         { name: '부스/전시', key: 'booth' },
         { name: '사진/영상', key: 'media' },
@@ -109,6 +114,13 @@
     return formData;
   }
 
+  function getEnabledSubmissionTargets() {
+    var labels = [];
+    if (CONFIG.emailjs.enabled) labels.push('이메일');
+    if (CONFIG.googleSheets.enabled) labels.push('Google Sheets');
+    return labels;
+  }
+
   // Build a readable email body from the form data
   function buildEmailBody(data) {
     var lines = [];
@@ -128,13 +140,19 @@
     lines.push('■ 참석 정보');
     lines.push('  예상 참석자: ' + (data.expected_attendees || '—') + '명');
     lines.push('  패컬티: ' + (data.faculty_count || '—') + '명');
-    lines.push('  좌장: ' + (data.chairs_per_session || '—'));
-    lines.push('  MC: ' + (data.has_mc || '—'));
+    lines.push('  연자 / 좌장 / 패널 / MC / VIP: ' +
+      (data.speaker_count || '0') + ' / ' +
+      (data.chair_count || '0') + ' / ' +
+      (data.panel_count || '0') + ' / ' +
+      (data.mc_total_count || '0') + ' / ' +
+      (data.vip_count || '0'));
     lines.push('');
     lines.push('■ 공간 구성');
     lines.push('  강의실: ' + (data.lecture_rooms || '—') + '개');
     lines.push('  실습실: ' + (data.practice_rooms || '0') + '개');
     lines.push('  총 운영룸: ' + (data.total_operational_rooms || '—') + '개');
+    lines.push('  촬영 운영: ' + (data.venue_operation_mode || '—'));
+    lines.push('  QR 발송 방식 / 시점: ' + (data.qr_send_method || '—') + ' / ' + (data.qr_send_timing || '—'));
     lines.push('');
     lines.push('■ 견적 요약 (' + (data._estimate_tier || '일반') + ')');
     lines.push('  총 견적: ' + (data._estimate_total || '—'));
@@ -247,6 +265,11 @@
       return;
     }
 
+    if (getEnabledSubmissionTargets().length === 0) {
+      showSubmitToast('제출 연동이 비활성화되어 있습니다. submit.js에서 EmailJS 또는 Google Sheets 설정을 활성화해주세요.', 'error');
+      return;
+    }
+
     isSubmitting = true;
     updateSubmitButton(true);
 
@@ -283,6 +306,11 @@
   }
 
   function showSubmitSuccess(data) {
+    var enabledTargets = getEnabledSubmissionTargets();
+    var deliveryText = enabledTargets.length > 0
+      ? '입력하신 내용이 ' + enabledTargets.join(' 및 ') + '로 전달되었습니다.'
+      : '입력하신 내용이 저장되었습니다.';
+
     // Show success modal overlay
     var overlay = document.getElementById('submitSuccessOverlay');
     if (!overlay) {
@@ -307,7 +335,7 @@
           '<div class="submit-detail-row"><span class="submit-detail-label">견적 금액</span><span class="submit-detail-amount">' + (data._estimate_total || '—') + '</span></div>' +
           '<div class="submit-detail-row"><span class="submit-detail-label">적용 단가</span><span>' + (data._estimate_tier || '일반') + '</span></div>' +
         '</div>' +
-        '<div class="submit-success-note">입력하신 내용이 담당자에게 전달되었습니다.<br>확인 후 연락드리겠습니다.</div>' +
+        '<div class="submit-success-note">' + deliveryText + '<br>확인 후 연락드리겠습니다.</div>' +
         '<div class="submit-success-actions">' +
           '<button type="button" class="btn btn-primary" onclick="document.getElementById(\'submitSuccessOverlay\').classList.remove(\'visible\')">확인</button>' +
           '<button type="button" class="btn btn-ghost" onclick="window.print()">견적서 인쇄 / PDF</button>' +
@@ -327,13 +355,13 @@
       toast = document.createElement('div');
       toast.id = 'submitToast';
       toast.className = 'admin-toast';
-      toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a1a;color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,0.15);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:9999;';
+      toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--color-text);color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,0.15);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:9999;';
       document.body.appendChild(toast);
     }
     if (type === 'error') {
-      toast.style.background = '#c53030';
+      toast.style.background = 'var(--color-error)';
     } else {
-      toast.style.background = '#1a1a1a';
+      toast.style.background = 'var(--color-text)';
     }
     toast.textContent = msg;
     toast.style.opacity = '1';

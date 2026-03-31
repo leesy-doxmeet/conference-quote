@@ -103,7 +103,7 @@ function writeToSheet(standardPrices, budgetPrices) {
   // Header row
   sheet.getRange(1, 1, 1, 3).setValues([['key', 'standard', 'budget']]);
   sheet.getRange(1, 1, 1, 3).setFontWeight('bold')
-    .setBackground('#1a6b5a').setFontColor('#ffffff');
+    .setBackground('#1f63d2').setFontColor('#ffffff');
   
   // Data rows
   var keys = Object.keys(standardPrices);

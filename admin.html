@@ -1,23 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!--
-   ______                            __
-  / ____/___  ____ ___  ____  __  __/ /____  _____
- / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
-/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
-\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
-                    /_/
-        Created with Perplexity Computer
-        https://www.perplexity.ai/computer
--->
-
-<!-- Perplexity Computer Attribution — SEO Meta Tags -->
-<meta name="generator" content="Perplexity Computer">
-<meta name="author" content="Perplexity Computer">
-<meta property="og:see_also" content="https://www.perplexity.ai/computer">
-<link rel="author" href="https://www.perplexity.ai/computer">
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>견적 단가 관리 — 학술대회 견적 시스템</title>
@@ -34,7 +17,9 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--color-surface);
+  background: rgba(245, 249, 255, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
 }
@@ -113,7 +98,7 @@
 
 /* Category section card */
 .admin-category {
-  background: var(--color-surface);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 250, 255, 0.96));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   margin-bottom: var(--space-6);
@@ -132,7 +117,7 @@
   gap: var(--space-3);
   padding: var(--space-5) var(--space-6);
   border-bottom: 1px solid var(--color-border-light);
-  background: var(--color-surface-2);
+  background: linear-gradient(180deg, var(--color-surface-2), rgba(255, 255, 255, 0.9));
 }
 
 .admin-category-icon {
@@ -191,7 +176,7 @@
 }
 
 .admin-tier-label.budget {
-  color: #b8860b;
+  color: var(--color-tier-budget);
 }
 
 /* Item rows — dual input */
@@ -257,7 +242,7 @@
 
 .admin-item-input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(26, 107, 90, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
   border-left-color: var(--color-primary);
 }
 
@@ -271,13 +256,13 @@
 
 /* Budget input accent */
 .admin-item-input.budget-input {
-  border-left-color: #e6d5a0;
+  border-left-color: rgba(var(--color-tier-budget-rgb), 0.35);
 }
 
 .admin-item-input.budget-input:focus {
-  border-color: #b8860b;
-  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1);
-  border-left-color: #b8860b;
+  border-color: var(--color-tier-budget);
+  box-shadow: 0 0 0 3px rgba(var(--color-tier-budget-rgb), 0.14);
+  border-left-color: var(--color-tier-budget);
 }
 
 .admin-item-input.budget-input.modified {
@@ -365,23 +350,6 @@
   gap: var(--space-2);
 }
 
-.admin-footer-attr {
-  text-align: center;
-  padding: var(--space-4) var(--space-6);
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-}
-
-.admin-footer-attr a {
-  color: var(--color-text-muted);
-  text-decoration: none;
-  transition: var(--transition);
-}
-
-.admin-footer-attr a:hover {
-  color: var(--color-primary);
-}
-
 /* Status bar (change indicator) */
 .admin-status {
   display: flex;
@@ -456,11 +424,6 @@
   }
 }
 
-/* Hidden file input */
-.hidden-input {
-  display: none;
-}
-
 /* Login overlay */
 .admin-login-overlay {
   position: fixed;
@@ -468,7 +431,9 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--color-surface-2, #f8f9fa);
+  background:
+    radial-gradient(circle at top left, rgba(var(--color-primary-rgb), 0.14), transparent 30%),
+    linear-gradient(180deg, #f7fbff 0%, var(--color-surface-2, #f8f9fa) 100%);
   z-index: 10000;
   display: flex;
   align-items: center;
@@ -494,12 +459,12 @@
   width: 48px;
   height: 48px;
   margin: 0 auto 16px;
-  background: var(--color-primary-light, #e6f5f0);
+  background: var(--color-primary-light, #dce8ff);
   border-radius: var(--radius-md, 8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-primary, #1a6b5a);
+  color: var(--color-primary, #1f63d2);
 }
 
 .admin-login-box .login-icon svg {
@@ -551,8 +516,8 @@
 }
 
 .admin-login-box .login-field input:focus {
-  border-color: var(--color-primary, #1a6b5a);
-  box-shadow: 0 0 0 3px rgba(26, 107, 90, 0.1);
+  border-color: var(--color-primary, #1f63d2);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
 }
 
 .admin-login-box .login-btn {
@@ -562,7 +527,7 @@
   font-weight: 600;
   font-family: 'Pretendard', sans-serif;
   color: #fff;
-  background: var(--color-primary, #1a6b5a);
+  background: var(--color-primary, #1f63d2);
   border: none;
   border-radius: var(--radius-sm, 6px);
   cursor: pointer;
@@ -571,7 +536,7 @@
 }
 
 .admin-login-box .login-btn:hover {
-  background: #155a4b;
+  background: var(--color-primary-hover, #194fa8);
 }
 
 .admin-login-box .login-error {
@@ -662,10 +627,6 @@
 <div class="admin-footer">
   <div class="admin-footer-meta" id="lastModified">마지막 수정: —</div>
   <div class="admin-footer-actions"></div>
-</div>
-
-<div class="admin-footer-attr">
-  <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">Created with Perplexity Computer</a>
 </div>
 
 <!-- Toast -->
@@ -833,7 +794,7 @@
   function showToast(msg, isError) {
     var el = document.getElementById('toast');
     el.textContent = msg;
-    el.style.background = isError ? '#c0392b' : '';
+    el.style.background = isError ? 'var(--color-error)' : '';
     el.classList.add('visible');
     setTimeout(function () {
       el.classList.remove('visible');

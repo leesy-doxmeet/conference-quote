@@ -1,5 +1,9 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
+  "notes": [
+    "Reference schema for developers.",
+    "The authoritative runtime behavior lives in index.html, app.js, submit.js, and pricing-config.js."
+  ],
   "sections": [
     {
       "id": "section_a",
@@ -60,7 +64,7 @@
         { "key": "group_count", "label": "조 수", "type": "number", "required": false, "min": 1, "conditional": { "field": "has_handson", "value": "있음" } },
         { "key": "practice_tables", "label": "실습 테이블 수", "type": "number", "required": false, "min": 1, "conditional": { "field": "has_handson", "value": "있음" }, "notes": "Default same as group_count, manual edit allowed" },
         { "key": "handson_memo", "label": "진행 일시 / 메모", "type": "textarea", "required": false, "conditional": { "field": "has_handson", "value": "있음" } },
-        { "key": "handson_assistants", "label": "핸즈온 보조인력 추천 수", "type": "number", "auto_calculated": true, "formula": "ceil(practice_tables / 4)", "notes": "PROVISIONAL — editable helper" }
+        { "key": "handson_assistants", "label": "핸즈온 보조인력 추천 수", "type": "number", "auto_calculated": true, "formula": "group_count", "notes": "PROVISIONAL — editable helper" }
       ]
     },
     {
@@ -177,8 +181,8 @@
     "qr_reader_count": "total_credit_rooms * 2",
     "operator_count": "total_operational_rooms * 2",
     "registration_desk_staff": 3,
-    "handson_assistants": "ceil(practice_tables / 4)",
-    "transport_placeholder": 200000,
-    "program_book_unit_cost": 8900
+    "handson_assistants": "group_count",
+    "transport_placeholder": "pricing_config.transport_default",
+    "program_book_unit_cost": "pricing_config.mat_program_book"
   }
 }
