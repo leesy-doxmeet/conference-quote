@@ -1658,7 +1658,7 @@
         { name: '부스 전시', est: estimates.booth },
         { name: '사진 / 영상', est: estimates.media },
         { name: '운송 / 출장', est: estimates.transport },
-        { name: '기타(소모품, 예비비, 기업이윤)', est: estimates.other }
+        { name: '기타', est: estimates.other }
       ];
 
       var rows = '';

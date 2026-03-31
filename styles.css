@@ -1605,37 +1605,63 @@ input, select, textarea {
   max-width: 1600px;
   margin: 0 auto;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-8);
   flex-wrap: wrap;
 }
 
-.app-footer-brand {
+.app-footer-brand-block {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 220px;
 }
 
-.app-footer-wordmark {
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: lowercase;
-  color: var(--color-text);
+.app-footer-logo {
+  width: min(220px, 58vw);
+  height: auto;
+  display: block;
 }
 
-.app-footer-divider {
-  width: 32px;
-  height: 1px;
-  background: var(--color-border);
+.app-footer-brand-copy {
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.8;
 }
 
 .app-footer-meta {
-  text-align: right;
+  flex: 1;
+  min-width: 320px;
   color: var(--color-text-muted);
   font-size: var(--text-xs);
   line-height: 1.7;
+}
+
+.app-footer-detail-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: var(--space-4);
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid rgba(217, 225, 236, 0.7);
+}
+
+.app-footer-detail-row:last-of-type {
+  border-bottom: none;
+}
+
+.app-footer-detail-label {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.app-footer-detail-value {
+  color: var(--color-text);
+}
+
+.app-footer-copyright {
+  margin-top: var(--space-4);
+  color: var(--color-text-muted);
 }
 
 
@@ -1804,6 +1830,13 @@ input, select, textarea {
 
   .app-footer-meta {
     text-align: left;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .app-footer-detail-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
   }
 }
 

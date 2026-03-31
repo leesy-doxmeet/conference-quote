@@ -331,37 +331,22 @@
   padding: var(--space-6);
   border-top: 1px solid var(--color-border);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: var(--space-6);
 }
 
 .admin-footer-meta {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
+  min-width: 140px;
 }
 
 .admin-footer-brand {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
-}
-
-.admin-footer-wordmark {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: lowercase;
-  color: var(--color-text);
-}
-
-.admin-footer-divider {
-  width: 24px;
-  height: 1px;
-  background: var(--color-border);
+  flex: 1;
+  min-width: 280px;
 }
 
 /* Status bar (change indicator) */
@@ -431,6 +416,10 @@
   .admin-footer {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .admin-footer-brand {
+    width: 100%;
   }
 
   .admin-item-reset-btn {
@@ -641,9 +630,46 @@
 <div class="admin-footer">
   <div class="admin-footer-meta" id="lastModified">마지막 수정: —</div>
   <div class="admin-footer-brand">
-    <span class="admin-footer-wordmark">doxmeet</span>
-    <span class="admin-footer-divider"></span>
-    <span>admin</span>
+    <div class="app-footer-inner" style="max-width:none;margin:0;gap:var(--space-6);width:100%;">
+      <div class="app-footer-brand-block" style="min-width:180px;">
+        <img src="doxmeet-logo.svg" alt="doxmeet" class="app-footer-logo" style="width:min(180px,48vw);">
+        <div class="app-footer-brand-copy">
+          <p>견적 단가 관리</p>
+          <p>관리자 페이지</p>
+        </div>
+      </div>
+      <div class="app-footer-meta" style="min-width:0;">
+        <div class="app-footer-detail-row">
+          <span class="app-footer-detail-label">사업자 등록번호</span>
+          <span class="app-footer-detail-value">385-88-02455</span>
+        </div>
+        <div class="app-footer-detail-row">
+          <span class="app-footer-detail-label">주소</span>
+          <span class="app-footer-detail-value">인천광역시 연수구 컨벤시아대로 80, 401동 1004호(송도동, 인천송도힐스테이트)</span>
+        </div>
+        <div class="app-footer-detail-row">
+          <span class="app-footer-detail-label">서울지사</span>
+          <span class="app-footer-detail-value">서울시 성동구 연무장 15길 11, 스파크플러스 2층 207호</span>
+        </div>
+        <div class="app-footer-detail-row">
+          <span class="app-footer-detail-label">대표번호</span>
+          <span class="app-footer-detail-value">070-7834-8371</span>
+        </div>
+        <div class="app-footer-detail-row">
+          <span class="app-footer-detail-label">담당자</span>
+          <span class="app-footer-detail-value">이성윤 선임</span>
+        </div>
+        <div class="app-footer-detail-row">
+          <span class="app-footer-detail-label">담당자 번호</span>
+          <span class="app-footer-detail-value">010-5608-8371</span>
+        </div>
+        <div class="app-footer-detail-row">
+          <span class="app-footer-detail-label">Email</span>
+          <span class="app-footer-detail-value">leesy@doxmeet.com</span>
+        </div>
+        <p class="app-footer-copyright">Copyright 2026 all rights reserved by 주식회사 닥스밋</p>
+      </div>
+    </div>
   </div>
 </div>
 
