@@ -163,21 +163,18 @@ input, select, textarea {
 }
 
 .header-logo {
-  width: 32px;
+  width: 116px;
   height: 32px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: var(--color-primary);
+  justify-content: flex-start;
   flex-shrink: 0;
 }
 
-.header-logo svg {
-  width: 18px;
-  height: 18px;
+.header-logo-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
 .header-title {
@@ -1796,6 +1793,11 @@ input, select, textarea {
 
   .header-title {
     font-size: var(--text-sm);
+  }
+
+  .header-logo {
+    width: 92px;
+    height: 26px;
   }
 
   .header-actions .btn span.btn-text {
