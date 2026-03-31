@@ -6,7 +6,7 @@
 // 2. PROVISIONAL HELPER FORMULAS (clearly marked for replacement)
 // 3. State Management
 // 4. DOM Utilities
-// 5. Section Logic (A through L)
+// 5. Section Logic (A through M)
 // 6. Summary Panel
 // 7. Validation
 // 8. Actions (Save, Reset, Export, Print, Load Sample)
@@ -50,28 +50,29 @@
   const SECTION_IDS = [
     'sectionA', 'sectionB', 'sectionC', 'sectionD',
     'sectionE', 'sectionF', 'sectionG', 'sectionH',
-    'sectionI', 'sectionJ', 'sectionK', 'sectionL'
+    'sectionI', 'sectionJ', 'sectionK', 'sectionL', 'sectionM'
   ];
 
   const SECTION_LABELS = {
     sectionA: 'A', sectionB: 'B', sectionC: 'C', sectionD: 'D',
     sectionE: 'E', sectionF: 'F', sectionG: 'G', sectionH: 'H',
-    sectionI: 'I', sectionJ: 'J', sectionK: 'K', sectionL: 'L'
+    sectionI: 'I', sectionJ: 'J', sectionK: 'K', sectionL: 'L', sectionM: 'M'
   };
 
   const REQUIRED_FIELDS = {
     sectionA: ['event_name', 'organization_name', 'event_type', 'event_start_date', 'event_end_date', 'pre_day_setup', 'venue_name'],
     sectionB: ['expected_attendees', 'faculty_count', 'chairs_per_session', 'has_mc'],
-    sectionC: ['lecture_rooms', 'has_preview_room', 'has_secretariat_room', 'has_special_rooms'],
-    sectionD: ['has_handson'],
-    sectionE: ['has_booths'],
-    sectionF: ['has_kma_credit', 'has_other_credits'],
-    sectionG: ['needs_prereg_page', 'needs_onsite_reg', 'needs_badge_printing', 'qr_send_method'],
-    sectionH: [],
+    sectionC: ['lecture_rooms', 'has_preview_room', 'has_special_rooms'],
+    sectionD: ['needs_video_recording'],
+    sectionE: ['has_handson'],
+    sectionF: ['has_booths'],
+    sectionG: ['has_kma_credit', 'has_other_credits'],
+    sectionH: ['needs_prereg_page', 'needs_onsite_reg', 'needs_badge_printing', 'qr_send_method'],
     sectionI: [],
-    sectionJ: ['has_live_qa'],
-    sectionK: ['venue_system_mode'],
-    sectionL: []
+    sectionJ: [],
+    sectionK: ['has_live_qa'],
+    sectionL: ['venue_system_mode'],
+    sectionM: []
   };
 
   const STORAGE_KEY = 'conference_quote_draft';
@@ -116,8 +117,9 @@
     return (pricingConfig && pricingConfig[key] !== undefined) ? pricingConfig[key] : fallback;
   }
 
-  function calcHandsonAssistants(tables) {
-    return Math.ceil((parseInt(tables, 10) || 0) / 4);
+  function calcHandsonAssistants(groupCount) {
+    // Handson assistants = group_count (1 per group)
+    return parseInt(groupCount, 10) || 0;
   }
 
   var TRANSPORT_PLACEHOLDER = P('transport_default', 250000);
@@ -269,6 +271,15 @@
       total += sAmount;
     }
 
+    // Name plate
+    if (data.name_plate) {
+      var npQty = parseInt(data.np_qty, 10) || 0;
+      var pNamePlate = P('mat_name_plate', 15000);
+      var npAmount = pNamePlate * npQty;
+      items.push({ item: '좌장연자 대명패', qty: npQty, unit: pNamePlate, amount: npAmount });
+      total += npAmount;
+    }
+
     // Design fee (flat)
     var designFee = pDesign;
     items.push({ item: '디자인비', qty: 1, unit: pDesign, amount: designFee });
@@ -281,17 +292,8 @@
     if (getRadioValue('has_booths') !== '있음') {
       return { total: 0, breakdown: [] };
     }
-    var boothCount = parseInt(data.booth_count, 10) || 0;
-    var needsElectrical = getRadioValue('needs_electrical') === '필요';
     var items = [];
     var total = 0;
-
-    if (needsElectrical) {
-      var pElec = P('booth_electrical', 70000);
-      var elAmount = pElec * boothCount;
-      items.push({ item: '전기 간선작업', qty: boothCount, unit: pElec, amount: elAmount });
-      total += elAmount;
-    }
 
     return { total: total, breakdown: items };
   }
@@ -371,19 +373,19 @@
       }
     });
 
-    // Multi-select checkboxes (event_type, post_event_outputs, qa_method)
-    ['event_type', 'post_event_outputs', 'qa_method'].forEach(function (name) {
+    // Multi-select checkboxes (event_type, post_event_outputs, qa_method, qr_send_method, qr_send_timing)
+    ['event_type', 'post_event_outputs', 'qa_method', 'qr_send_method', 'qr_send_timing'].forEach(function (name) {
       data[name] = getCheckedValues(name);
     });
 
     // Toggle card checkboxes (materials)
-    ['program_book', 'abstract_book', 'badges', 'x_banners', 'hanging_banner', 'podium_board', 'schedule_banner'].forEach(function (name) {
+    ['program_book', 'abstract_book', 'badges', 'x_banners', 'hanging_banner', 'podium_board', 'schedule_banner', 'name_plate'].forEach(function (name) {
       var cb = $('input[name="' + name + '"]');
       data[name] = cb ? cb.checked : false;
     });
 
     // Standalone checkboxes
-    ['include_preview_in_count', 'include_secretariat_in_count', 'total_rooms_override'].forEach(function (name) {
+    ['total_rooms_override'].forEach(function (name) {
       var cb = document.getElementById(name);
       data[name] = cb ? cb.checked : false;
     });
@@ -471,12 +473,15 @@
     });
 
     // Radio buttons
-    ['chairs_per_session', 'has_mc', 'has_preview_room', 'has_secretariat_room',
-     'has_special_rooms', 'has_handson', 'has_booths', 'needs_electrical',
+    ['chairs_per_session', 'has_mc', 'has_preview_room',
+     'has_special_rooms', 'has_handson', 'has_booths',
      'has_kma_credit', 'has_other_credits', 'needs_prereg_page',
-     'needs_onsite_reg', 'needs_badge_printing', 'qr_send_method',
-     'qr_send_timing', 'has_live_qa', 'venue_system_mode', 'am_pm_split',
-     'pb_format', 'ab_format', 'video_type'].forEach(function (name) {
+     'needs_onsite_reg', 'needs_badge_printing',
+     'has_live_qa', 'venue_system_mode',
+     'pb_format', 'ab_format', 'video_type',
+     'needs_video_recording', 'video_recording_type',
+     'presenter_material_setup', 'video_output_format',
+     'materials_mode', 'materials_level'].forEach(function (name) {
       if (data[name]) {
         var radio = $('input[name="' + name + '"][value="' + data[name] + '"]');
         if (radio) radio.checked = true;
@@ -484,7 +489,7 @@
     });
 
     // Multi-select checkboxes
-    ['event_type', 'post_event_outputs', 'qa_method'].forEach(function (name) {
+    ['event_type', 'post_event_outputs', 'qa_method', 'qr_send_method', 'qr_send_timing'].forEach(function (name) {
       if (Array.isArray(data[name])) {
         data[name].forEach(function (val) {
           var cb = $('input[name="' + name + '"][value="' + val + '"]');
@@ -494,7 +499,7 @@
     });
 
     // Material toggles
-    ['program_book', 'abstract_book', 'badges', 'x_banners', 'hanging_banner', 'podium_board', 'schedule_banner'].forEach(function (name) {
+    ['program_book', 'abstract_book', 'badges', 'x_banners', 'hanging_banner', 'podium_board', 'schedule_banner', 'name_plate'].forEach(function (name) {
       var cb = $('input[name="' + name + '"]');
       if (cb && data[name]) {
         cb.checked = true;
@@ -504,7 +509,7 @@
     });
 
     // Standalone checkboxes
-    ['include_preview_in_count', 'include_secretariat_in_count', 'total_rooms_override'].forEach(function (name) {
+    ['total_rooms_override'].forEach(function (name) {
       var cb = document.getElementById(name);
       if (cb && data[name]) cb.checked = true;
     });
@@ -726,8 +731,8 @@
       row.setAttribute('data-day', i + 1);
       row.innerHTML =
         '<span class="schedule-day-label">' + (i + 1) + '일차</span>' +
-        '<input type="time" name="daily_schedule[' + i + '].start_time" class="form-input" placeholder="시작">' +
-        '<input type="time" name="daily_schedule[' + i + '].end_time" class="form-input" placeholder="종료">';
+        '<input type="time" name="daily_schedule[' + i + '].start_time" class="form-input" placeholder="시작" value="09:00">' +
+        '<input type="time" name="daily_schedule[' + i + '].end_time" class="form-input" placeholder="종료" value="16:00">';
       container.appendChild(row);
     }
   }
@@ -762,12 +767,8 @@
     if (getRadioValue('has_special_rooms') === '있음') {
       specialRoomCount = getNumVal('special_room_count');
     }
-    var includePreview = document.getElementById('include_preview_in_count');
-    var includeSecretariat = document.getElementById('include_secretariat_in_count');
-    var previewAdd = (includePreview && includePreview.checked && getRadioValue('has_preview_room') === '있음') ? 1 : 0;
-    var secretariatAdd = (includeSecretariat && includeSecretariat.checked && getRadioValue('has_secretariat_room') === '있음') ? 1 : 0;
 
-    var total = lectureRooms + practiceRooms + specialRoomCount + previewAdd + secretariatAdd;
+    var total = lectureRooms + practiceRooms + specialRoomCount;
 
     var el = document.getElementById('total_operational_rooms');
     if (el) {
@@ -791,10 +792,10 @@
   }
 
   function updateHandsonAssistants() {
-    var tables = getNumVal('practice_tables');
+    var groupCount = getNumVal('group_count');
     var el = document.getElementById('handson_assistants');
-    if (el && !el._userEdited) {
-      el.value = tables > 0 ? calcHandsonAssistants(tables) : '';
+    if (el) {
+      el.value = groupCount > 0 ? calcHandsonAssistants(groupCount) : '';
     }
   }
 
@@ -823,7 +824,7 @@
     }
   }
 
-  // --- Section H: Badge qty ---
+  // --- Section I: Badge qty ---
   function updateBadgeQty() {
     var attendees = getNumVal('expected_attendees');
     var el = document.getElementById('badge_qty');
@@ -832,7 +833,7 @@
     }
   }
 
-  // --- Section K: System split display ---
+  // --- Section L: System split display ---
   function updateSystemSplitDisplay() {
     var venueCol = document.getElementById('venueProvided');
     var extCol = document.getElementById('externalSetup');
@@ -904,7 +905,7 @@
     SECTION_IDS.forEach(function (sid) {
       if (isSectionComplete(sid)) completedSections++;
     });
-    if (headerText) headerText.textContent = completedSections + ' / 12 섹션';
+    if (headerText) headerText.textContent = completedSections + ' / 13 섹션';
 
     // --- Accuracy badge ---
     var badge = document.getElementById('accuracyBadge');
@@ -992,6 +993,7 @@
     var excludedList = document.getElementById('excludedItems');
     if (excludedList) {
       var excluded = [];
+      if (getRadioValue('needs_video_recording') === '불필요') excluded.push('영상촬영');
       if (getRadioValue('has_handson') === '없음') excluded.push('핸즈온 실습');
       if (getRadioValue('has_booths') === '없음') excluded.push('부스 / 전시');
       if (getRadioValue('has_kma_credit') === '없음') excluded.push('의협 평점');
@@ -1013,7 +1015,7 @@
         '운영일 수: 시작일~종료일 범위 자동 계산',
         '명찰 수량: 등록자 수 × 1.2 기준 (' + (data.badge_qty || '—') + '매)',
         'QR 리더 수: 평점 관리 룸 × 2 기준 (' + (data.qr_reader_count || '—') + '대)',
-        '핸즈온 보조인력: 테이블 수 / 4 기준 (' + (data.handson_assistants || '—') + '명)',
+        '핸즈온 보조인력: 조 수 기준 (' + (data.handson_assistants || '—') + '명)',
         '운송비: 200,000원 기본 반영',
         '프로그램북 단가: 8,900원 기준'
       ];
@@ -1052,7 +1054,7 @@
   }
 
   function isFieldFilled(key, data) {
-    if (key === 'event_type' || key === 'post_event_outputs' || key === 'qa_method') {
+    if (key === 'event_type' || key === 'post_event_outputs' || key === 'qa_method' || key === 'qr_send_method' || key === 'qr_send_timing') {
       return Array.isArray(data[key]) && data[key].length > 0;
     }
     var val = data[key];
@@ -1164,8 +1166,8 @@
       schedContainer.innerHTML =
         '<div class="schedule-row" data-day="1">' +
         '<span class="schedule-day-label">1일차</span>' +
-        '<input type="time" name="daily_schedule[0].start_time" class="form-input" placeholder="시작">' +
-        '<input type="time" name="daily_schedule[0].end_time" class="form-input" placeholder="종료">' +
+        '<input type="time" name="daily_schedule[0].start_time" class="form-input" placeholder="시작" value="09:00">' +
+        '<input type="time" name="daily_schedule[0].end_time" class="form-input" placeholder="종료" value="16:00">' +
         '</div>';
     }
 
@@ -1208,17 +1210,16 @@
   function handleLoadSample() {
     var sampleData = {
       "event_name": "제7회 학술대회",
-      "organization_name": "대한디지털임상의학회",
-      "event_type": ["오프라인 행사"],
+      "organization_name": "닥스밋학회",
+      "event_type": ["오프라인"],
       "event_start_date": "2026-06-14",
       "event_end_date": "2026-06-14",
       "event_days": 1,
       "daily_schedule": [
-        { "day": 1, "start_time": "08:30", "end_time": "17:00" }
+        { "day": 1, "start_time": "09:00", "end_time": "16:00" }
       ],
       "pre_day_setup": "가능",
       "venue_name": "가톨릭대학교 성의교정 옴니버스파크 플렌티홀",
-      "venue_address": "서울특별시 서초구",
       "expected_attendees": 300,
       "faculty_count": 38,
       "booth_staff_count": 40,
@@ -1226,26 +1227,25 @@
       "has_mc": "있음",
       "mc_count": 2,
       "room_based_calc": null,
-      "am_pm_split": "예",
       "lecture_rooms": 3,
       "practice_rooms": 1,
       "has_preview_room": "있음",
-      "has_secretariat_room": "있음",
       "has_special_rooms": "없음",
       "special_room_count": 0,
       "total_operational_rooms": 4,
       "total_rooms_override": false,
-      "include_preview_in_count": false,
-      "include_secretariat_in_count": false,
+      "needs_video_recording": "필요",
+      "video_recording_type": "강의룸별 강의 영상 필요",
+      "presenter_material_setup": "필요",
+      "video_output_format": "연자얼굴 + 발표자료 + 목소리",
       "has_handson": "있음",
       "group_size": 6,
       "group_count": 5,
       "practice_tables": 5,
       "handson_memo": "오전 2부 / 오후 2부 구성, 복부·심장·갑상선·근골격·유방(혈관) 파트별 운영",
-      "handson_assistants": 2,
+      "handson_assistants": 5,
       "has_booths": "있음",
       "booth_count": 20,
-      "needs_electrical": "필요",
       "booth_notes": "1kW 기준 간선작업 40개 부스 예상. 부스 배치도는 추후 확정.",
       "has_kma_credit": "있음",
       "kma_credit_points": 6,
@@ -1253,21 +1253,21 @@
       "has_other_credits": "있음",
       "other_credit_institutions": [
         {
-          "institution_name": "대한내과학회",
+          "institution_name": "닥스밋내과학회",
           "credit_points": 11,
           "credit_criteria": "별도 작성",
           "custom_criteria": "초음파 기초교육 및 실습을 포함하여 총 2시간 이상 수강한 내과전공의만 해당",
           "institution_credit_rooms": 2
         },
         {
-          "institution_name": "한국심초음파학회",
+          "institution_name": "닥스밋심초음파학회",
           "credit_points": 3,
           "credit_criteria": "별도 작성",
           "custom_criteria": "심장세션 수강자만 해당 (참석시간에 따른 부분평점 부여)",
           "institution_credit_rooms": 1
         },
         {
-          "institution_name": "대한간학회",
+          "institution_name": "닥스밋간학회",
           "credit_points": 5,
           "credit_criteria": "별도 작성",
           "custom_criteria": "복부세션 수강자만 해당 (참석시간에 따른 부분평점 부여)",
@@ -1279,8 +1279,9 @@
       "prereg_requirements": "사전등록 결제 연동, 등록 유형별 금액 차등 (평생회원/전임의·전공의/비회원/핸즈온코스), 등록확인서 자동 발급",
       "needs_onsite_reg": "필요",
       "needs_badge_printing": "필요",
-      "qr_send_method": "둘 다",
-      "qr_send_timing": "하루 전",
+      "qr_send_method": ["문자", "이메일"],
+      "qr_send_timing": ["하루 전"],
+      "materials_mode": "직접 작성",
       "program_book": true,
       "pb_format": "둘 다",
       "pb_print_qty": 300,
@@ -1297,12 +1298,13 @@
       "pod_qty": 2,
       "schedule_banner": true,
       "sb_qty": 1,
+      "name_plate": true,
+      "np_qty": 18,
       "custom_materials": [
-        { "item_name": "좌장 대명패", "item_qty": 18, "item_memo": "" },
         { "item_name": "패널 소명패", "item_qty": 20, "item_memo": "" },
         { "item_name": "방향배너 화살표", "item_qty": 6, "item_memo": "" }
       ],
-      "post_event_outputs": ["연자별 사진", "연자별 강의영상", "평점부여내역 (의협)"],
+      "post_event_outputs": ["연자별 사진", "연자별 강의영상", "평점부여자료"],
       "video_type": "연자 얼굴 + 강의자료 + 음성",
       "has_live_qa": "현장질문 받아요",
       "qa_method": ["모바일로 받아 좌장이 연자에게 질문"],
@@ -1351,7 +1353,7 @@
       }
 
       // Track user edits on auto-calculated fields
-      if (target.id === 'handson_assistants' || target.id === 'qr_reader_count' || target.id === 'badge_qty') {
+      if (target.id === 'qr_reader_count' || target.id === 'badge_qty') {
         target._userEdited = true;
       }
     });
@@ -1371,16 +1373,13 @@
       if (target.name === 'lecture_rooms' || target.name === 'practice_rooms' ||
           target.name === 'has_special_rooms' || target.name === 'special_room_count' ||
           target.id === 'total_rooms_override' ||
-          target.id === 'include_preview_in_count' || target.id === 'include_secretariat_in_count' ||
-          target.name === 'has_preview_room' || target.name === 'has_secretariat_room') {
+          target.name === 'has_preview_room') {
         updateTotalRooms();
       }
 
       // Hands-on
       if (target.name === 'has_handson' || target.name === 'group_count') {
         updateHandsonDefaults();
-      }
-      if (target.name === 'practice_tables') {
         updateHandsonAssistants();
       }
 
