@@ -32,6 +32,7 @@
   // STATE
   // ============================================================
   var isSubmitting = false;
+  var emailjsInitialized = false;
 
   // ============================================================
   // HELPERS
@@ -94,7 +95,6 @@
         { name: '인력', key: 'staff' },
         { name: '운영', key: 'operations' },
         { name: '제작물', key: 'materials' },
-        { name: '부스/전시', key: 'booth' },
         { name: '사진/영상', key: 'media' },
         { name: '운송/출장', key: 'transport' },
         { name: '기타', key: 'other' }
@@ -201,8 +201,7 @@
     return emailjs.send(
       CONFIG.emailjs.serviceId,
       CONFIG.emailjs.templateId,
-      templateParams,
-      CONFIG.emailjs.publicKey
+      templateParams
     );
   }
 
@@ -375,7 +374,19 @@
   // ============================================================
   // INIT
   // ============================================================
+  function initEmailJS() {
+    if (emailjsInitialized || !CONFIG.emailjs.enabled) return;
+    if (typeof emailjs === 'undefined' || !CONFIG.emailjs.publicKey) return;
+
+    emailjs.init({
+      publicKey: CONFIG.emailjs.publicKey
+    });
+    emailjsInitialized = true;
+  }
+
   function initSubmit() {
+    initEmailJS();
+
     var btn = document.getElementById('btnSubmitQuote');
     if (btn) {
       btn.addEventListener('click', handleSubmit);

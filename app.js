@@ -1064,7 +1064,6 @@
     setEstimateCard('estStaff', staffEst.total);
     setEstimateCard('estMaterials', matEst.total);
     setEstimateCard('estOperations', opsEst.total);
-    setEstimateCard('estBooth', boothEst.total);
     setEstimateCard('estMedia', mediaEst.total);
     setEstimateCard('estTransport', transEst.total);
     setEstimateCard('estOther', otherEst.total);
@@ -1655,7 +1654,6 @@
         { name: '인력', est: estimates.staff },
         { name: '제작물', est: estimates.materials },
         { name: '운영', est: estimates.operations },
-        { name: '부스 전시', est: estimates.booth },
         { name: '사진 / 영상', est: estimates.media },
         { name: '운송 / 출장', est: estimates.transport },
         { name: '기타', est: estimates.other }
