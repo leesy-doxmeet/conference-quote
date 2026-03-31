@@ -12,10 +12,12 @@
   var CONFIG = {
     // EmailJS (https://www.emailjs.com)
     emailjs: {
-      enabled: false,                              // Set to true after setup
-      publicKey: 'xknWvWLAqoNflQ2gO',        // Dashboard → Account → General → Public Key
-      serviceId: 'service_1rf6nkv',        // Dashboard → Email Services → Service ID
-      templateId: 'template_4t67h6g'       // Dashboard → Email Templates → Template ID
+      enabled: true,
+      publicKey: 'xknWvWLAqoNflQ2gO',
+      serviceId: 'service_1rf6nkv',
+      templateId: 'template_4t67h6g',
+      blockHeadless: true,
+      limitRateMs: 10000
     },
 
     // Google Sheets via Apps Script Web App
@@ -25,7 +27,7 @@
     },
 
     // Recipient info (for display purposes)
-    recipientEmail: 'cheezefac@gmail.com'
+    recipientEmail: 'leesy@doxmeet.com'
   };
 
   // ============================================================
@@ -108,8 +110,11 @@
     }
 
     // Submission metadata
+    formData._submission_id = 'DQ-' + Date.now();
     formData._submitted_at = new Date().toISOString();
     formData._submitted_at_kr = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+    formData._source_origin = window.location.origin || 'local-file';
+    formData._source_url = window.location.href || 'local-file';
 
     return formData;
   }
@@ -165,10 +170,70 @@
     }
     lines.push('');
     lines.push('───────────────────────────────────────');
+    lines.push('접수번호: ' + (data._submission_id || '—'));
     lines.push('제출 시각: ' + (data._submitted_at_kr || '—'));
+    lines.push('제출 출처: ' + (data._source_origin || '—'));
     lines.push('───────────────────────────────────────');
 
     return lines.join('\n');
+  }
+
+  function buildSubmissionTasks(data) {
+    var tasks = [];
+
+    if (CONFIG.emailjs.enabled) {
+      tasks.push({
+        key: 'emailjs',
+        label: '이메일',
+        run: function () {
+          return sendEmailJS(data);
+        }
+      });
+    }
+
+    if (CONFIG.googleSheets.enabled) {
+      tasks.push({
+        key: 'googleSheets',
+        label: 'Google Sheets',
+        run: function () {
+          return sendToGoogleSheets(data);
+        }
+      });
+    }
+
+    return tasks;
+  }
+
+  function normalizeSubmissionError(err) {
+    if (!err) return { status: 0, text: 'Unknown error' };
+    return {
+      status: err.status || 0,
+      text: err.text || err.message || String(err)
+    };
+  }
+
+  function getSubmitErrorMessage(failedTargets) {
+    var first = failedTargets[0];
+    if (!first) {
+      return '제출 중 오류가 발생했습니다. 다시 시도해주세요.';
+    }
+
+    var text = (first.error && first.error.text ? first.error.text : '').toLowerCase();
+    var status = first.error ? first.error.status : 0;
+
+    if (status === 429) {
+      return '너무 빠르게 연속 제출되었습니다. 10초 후 다시 시도해주세요.';
+    }
+
+    if (status === 451) {
+      return '보안 설정으로 인해 현재 브라우저 환경에서는 전송할 수 없습니다.';
+    }
+
+    if (text.indexOf('domain') !== -1 || text.indexOf('origin') !== -1 || text.indexOf('allowlist') !== -1) {
+      return 'EmailJS 도메인 허용 목록 설정을 확인해주세요.';
+    }
+
+    return first.label + ' 전송에 실패했습니다. 설정을 확인해주세요.';
   }
 
   // ============================================================
@@ -186,6 +251,7 @@
     }
 
     var templateParams = {
+      submission_id: data._submission_id || '',
       event_name: data.event_name || '(미입력)',
       organization_name: data.organization_name || '(미입력)',
       event_dates: (data.event_start_date || '—') + ' ~ ' + (data.event_end_date || '—'),
@@ -194,6 +260,8 @@
       estimate_total: data._estimate_total || '—',
       estimate_tier: data._estimate_tier || '일반',
       submitted_at: data._submitted_at_kr || '—',
+      source_origin: data._source_origin || '',
+      source_url: data._source_url || '',
       message: buildEmailBody(data),
       to_email: CONFIG.recipientEmail
     };
@@ -264,7 +332,8 @@
       return;
     }
 
-    if (getEnabledSubmissionTargets().length === 0) {
+    var tasks = buildSubmissionTasks(data);
+    if (tasks.length === 0) {
       showSubmitToast('제출 연동이 비활성화되어 있습니다. submit.js에서 EmailJS 또는 Google Sheets 설정을 활성화해주세요.', 'error');
       return;
     }
@@ -272,19 +341,43 @@
     isSubmitting = true;
     updateSubmitButton(true);
 
-    var promises = [];
-    promises.push(sendEmailJS(data));
-    promises.push(sendToGoogleSheets(data));
+    Promise.allSettled(tasks.map(function (task) {
+      return task.run();
+    })).then(function (results) {
+      var successTargets = [];
+      var failedTargets = [];
 
-    Promise.all(promises).then(function (results) {
+      results.forEach(function (result, idx) {
+        var task = tasks[idx];
+
+        if (result.status === 'fulfilled' && !result.value.skipped) {
+          successTargets.push(task.label);
+          return;
+        }
+
+        if (result.status === 'rejected') {
+          failedTargets.push({
+            key: task.key,
+            label: task.label,
+            error: normalizeSubmissionError(result.reason)
+          });
+        }
+      });
+
       isSubmitting = false;
       updateSubmitButton(false);
-      showSubmitSuccess(data);
-    }).catch(function (err) {
-      console.error('[Submit] Error:', err);
-      isSubmitting = false;
-      updateSubmitButton(false);
-      showSubmitToast('제출 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+
+      if (successTargets.length > 0) {
+        showSubmitSuccess(data, successTargets);
+        if (failedTargets.length > 0) {
+          showSubmitToast('일부 채널 전송 실패: ' + failedTargets.map(function (item) { return item.label; }).join(', '), 'error');
+          console.warn('[Submit] Partial submission failure:', failedTargets);
+        }
+        return;
+      }
+
+      console.error('[Submit] All submission targets failed:', failedTargets);
+      showSubmitToast(getSubmitErrorMessage(failedTargets), 'error');
     });
   }
 
@@ -304,10 +397,9 @@
     }
   }
 
-  function showSubmitSuccess(data) {
-    var enabledTargets = getEnabledSubmissionTargets();
-    var deliveryText = enabledTargets.length > 0
-      ? '입력하신 내용이 ' + enabledTargets.join(' 및 ') + '로 전달되었습니다.'
+  function showSubmitSuccess(data, deliveredTargets) {
+    var deliveryText = deliveredTargets && deliveredTargets.length > 0
+      ? '입력하신 내용이 ' + deliveredTargets.join(' 및 ') + '로 전달되었습니다.'
       : '입력하신 내용이 저장되었습니다.';
 
     // Show success modal overlay
@@ -379,7 +471,12 @@
     if (typeof emailjs === 'undefined' || !CONFIG.emailjs.publicKey) return;
 
     emailjs.init({
-      publicKey: CONFIG.emailjs.publicKey
+      publicKey: CONFIG.emailjs.publicKey,
+      blockHeadless: !!CONFIG.emailjs.blockHeadless,
+      limitRate: {
+        id: 'conference-quote-submit',
+        throttle: CONFIG.emailjs.limitRateMs || 0
+      }
     });
     emailjsInitialized = true;
   }

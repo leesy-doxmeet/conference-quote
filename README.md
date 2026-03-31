@@ -26,7 +26,7 @@ Academic Conference Quotation Intake System
    - **임시저장** — Save the current draft to the in-memory session state
    - **초기화** — Clear all form data
    - **인쇄 / PDF 저장** — Print or save as PDF via browser print dialog
-   - **견적 제출** — Send via EmailJS / Google Sheets after enabling integrations in `submit.js`
+  - **견적 제출** — Send via EmailJS with the current live configuration in `submit.js`
 
 ---
 
@@ -86,7 +86,9 @@ The form keeps a temporary in-memory draft and auto-saves every 30 seconds plus 
 
 - GitHub Pages deploys automatically when pushing to `main`
 - Set `pricing-config.js` `SHEETS_API_URL` for pricing sync
-- Enable EmailJS and/or Google Sheets submission in `submit.js` before using **견적 제출**
+- EmailJS is enabled in `submit.js`; confirm the EmailJS dashboard has the current domain allowlisted
+- Recommended allowlist origins: `https://leesy-doxmeet.github.io` and your local preview origin such as `http://127.0.0.1:5500`
+- Confirm the EmailJS template includes `{{to_email}}`, `{{message}}`, `{{submission_id}}`, `{{submitted_at}}`, `{{source_origin}}`, and `{{source_url}}`
 - The admin page login is client-side only; replace it with real authentication before public use
 
 ### Print / PDF

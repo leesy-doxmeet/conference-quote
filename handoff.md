@@ -42,7 +42,7 @@ conference-quote/
 - **Pricing DB:** Google Sheets via Apps Script Web App
 - **Data Collection:** EmailJS + Google Sheets (submit.js)
 - **No build step, no frameworks, no npm**
-- **Submission Integrations:** Disabled by default in `submit.js` until EmailJS / Google Sheets are configured
+- **Submission Integrations:** EmailJS is enabled by default in `submit.js`; production requires the GitHub Pages origin to be added to the EmailJS allowlist
 
 ---
 
